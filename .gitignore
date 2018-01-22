@@ -1,0 +1,4 @@
+#ignore compiled files
+/Debug/
+/Release/
+/.vs/
