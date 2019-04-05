@@ -14,28 +14,30 @@
 #include "analog.h"
 #include "joystick.h"
 
-#define SEND_BUFFER_SIZE  1
+#define SEND_BUFFER_SIZE  8
+#define RECEIVE_BUFFER_SIZE 8
 
 static bool switchLastState = false;
 static bool switchState = false;
 static uint8_t cntVal = 0;
 static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
+static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 uint8_t msghandledemo = 0;
 uint8_t extintCount = 0;
 
 static bool txComplete = true;
 
-//measurement variables
-volatile uint8_t jstkLeftHorzVal = 0;
-volatile bool jstkLeftHorzDir = 0;
-volatile uint8_t jstkLeftVertVal = 0;
-volatile bool jstkLeftVertDir = 0;
-volatile uint8_t jstkRightHorzVal = 0;
-volatile bool jstkRightHorzDir = 0;
-volatile uint8_t jstkRightVertVal = 0;
-volatile bool jstkRightVertDir = 0;
+typedef enum
+{
+	DISCONNECTED,
+	WAIT,
+	SAMPLE,
+	SEND,
+	RECEIVE,
+	PROCESS	
+}APP_STATE_T;
 
-//data structures for joysticks
+//handles for joysticks
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
 
@@ -46,7 +48,7 @@ static void main_clock_select_osc16m(void);
 static void main_clock_select_dfll(void);
 static void main_clock_select(const enum system_clock_source clock_source);
 
-
+APP_STATE_T appState = DISCONNECTED;
 
 void AppInit(void)
 {
@@ -62,56 +64,101 @@ void AppInit(void)
 	//Initialize ADC for joystick measurements
 	ADC_init();
 	
-	//initialize data structures for joysticks
+	//Get handles for joysticks
 	leftJoystick  = Joystick_Create(ADC_ReadChannel_06, ADC_ReadChannel_07);
 	rightJoystick = Joystick_Create(ADC_ReadChannel_10, ADC_ReadChannel_11);
-	
 }
 
 void AppTask(void)
 {
-	//Sample joysticks and print:
-	Joystick_Measure(leftJoystick);
-	jstkLeftHorzVal = Joystick_GetHorz(leftJoystick);
-	jstkLeftHorzDir = Joystick_GetHorzDirection(leftJoystick);
-	jstkLeftVertVal = Joystick_GetVert(leftJoystick);
-	jstkLeftVertDir = Joystick_GetVertDirection(leftJoystick);
-	Joystick_Measure(rightJoystick);
-	jstkRightHorzVal = Joystick_GetHorz(rightJoystick);
-	jstkRightHorzDir = Joystick_GetHorzDirection(rightJoystick);
-	jstkRightVertVal = Joystick_GetVert(rightJoystick);
-	jstkRightVertDir = Joystick_GetVertDirection(rightJoystick);
-	printf("L H:%03i, D: %01i, V:%03i, D: %01i, R H:%03i, D: %01i, V:%03i, D: %01i\r\n",
-		jstkLeftHorzVal, jstkLeftHorzDir,
-		jstkLeftVertVal, jstkLeftVertDir,
-		jstkRightHorzVal, jstkRightHorzDir,
-		jstkRightVertVal, jstkRightVertDir);
-
-// 	//ToDo: build data buffer
-// 	sendDataBuffer[0] = 0x41 + cntVal%10; //start at ascii A
-// 	cntVal++;
-// 		
-// 	//send broadcast data ***ToDo: change to unicast
-// 	uint16_t broadcastAddress = 0xFFFF;
-// 	DEBUG_OUTPUT(printf("sending char: %u\r\n", sendDataBuffer[0]));
-// 		
-// 		
-// 	//wait until transceiver is ready to send?
-// 	txComplete = false;
-// 	bool res = MiApp_SendData(SHORT_ADDR_LEN, (uint8_t *)&broadcastAddress,
-// 		SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, dataConfcb);
-// 	if(!res)
-// 	{
-// 		printf("send fail\r\n");
-// 	}
+	
+	//Mi-Wi connection state machine:
+	//disconnected
+		
+	//connected
+		//remote control state machine:
+	switch(appState)
+	{
+		case DISCONNECTED:
+		{
+			//blink red LED every 500ms
+			//try to connect
+				//timeout?
+			appState = WAIT;
+			break;
+		}
+		case WAIT:
+		{
+			//wait for 15??ms timer //
+			//(can we sleep while waiting?)
+			//
+			if(true)//placeholder for timer flag
+			{
+				appState = SAMPLE;
+			}
+			break;
+		}
+		case SAMPLE:
+		{
+			//sample joysticks
+			Joystick_Measure(leftJoystick);
+			Joystick_Measure(rightJoystick);
+			//create TX payload
+			sendDataBuffer[0] = (uint8_t)Joystick_GetHorz(leftJoystick);
+			sendDataBuffer[1] = (uint8_t)Joystick_GetHorzDirection(leftJoystick);
+			sendDataBuffer[2] = (uint8_t)Joystick_GetVert(leftJoystick);
+			sendDataBuffer[3] = (uint8_t)Joystick_GetVertDirection(leftJoystick);
+			sendDataBuffer[4] = (uint8_t)Joystick_GetHorz(rightJoystick);
+			sendDataBuffer[5] = (uint8_t)Joystick_GetHorzDirection(rightJoystick);
+			sendDataBuffer[6] = (uint8_t)Joystick_GetVert(rightJoystick);
+			sendDataBuffer[7] = (uint8_t)Joystick_GetVertDirection(rightJoystick);
+			DEBUG_OUTPUT(printf("L H:%03i, D: %01i, V:%03i, D: %01i, R H:%03i, D: %01i, V:%03i, D: %01i\r\n",\
+				sendDataBuffer[0], sendDataBuffer[1],\
+				sendDataBuffer[2], sendDataBuffer[3],\
+				sendDataBuffer[4], sendDataBuffer[5],\
+				sendDataBuffer[6], sendDataBuffer[7]);)
+					
+			appState = SEND;
+			break;
+		}
+		case SEND:
+		{
+// 			//send TX payload
+// 			//***ToDo: change to unicast
+// 			uint16_t broadcastAddress = 0xFFFF;
+// 			DEBUG_OUTPUT(printf("sending char: %u\r\n", sendDataBuffer[0]));
 // 
-// 	//Wait until the transmission is complete before sleeping
-// 	while(txComplete != true)
-// 	{
-// 		P2PTasks();
-// 	}
-// 		
-
+// 
+// 			//wait until transceiver is ready to send?
+// 			txComplete = false;
+// 			bool res = MiApp_SendData(SHORT_ADDR_LEN, (uint8_t *)&broadcastAddress,
+// 				SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, dataConfcb);
+// 			if(!res)
+// 			{
+// 				printf("send fail\r\n");
+// 			}
+// 
+// 			//Wait until the transmission is complete before sleeping
+// 			while(txComplete != true)
+// 			{
+// 				P2PTasks();
+// 			}
+			appState = RECEIVE;
+			break;
+		}
+		case RECEIVE:
+		{
+			//receive data?
+			appState = PROCESS;
+			break;
+		}
+		case PROCESS:
+		{
+			//process RX payload
+			appState = WAIT;
+			break;
+		}
+	}
 }
 
 static void dataConfcb(uint8_t handle, miwi_status_t status, uint8_t* msgPointer)
