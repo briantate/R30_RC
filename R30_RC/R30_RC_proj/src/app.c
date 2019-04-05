@@ -64,19 +64,31 @@ void AppInit(void)
 	//Initialize ADC for joystick measurements
 	ADC_init();
 	
-	//Get handles for joysticks
+	//Get joystick objects
 	leftJoystick  = Joystick_Create(ADC_ReadChannel_06, ADC_ReadChannel_07);
+	if(leftJoystick == NULL)
+	{
+		DEBUG_OUTPUT(printf("[APP] ERROR - unable to create left joystick\r\n"));
+		while(1)
+		{
+			//ToDo: add error handling?
+		}
+	}
+	
 	rightJoystick = Joystick_Create(ADC_ReadChannel_10, ADC_ReadChannel_11);
+	if(rightJoystick == NULL)
+	{
+		DEBUG_OUTPUT(printf("[APP] ERROR - unable to create right joystick\r\n"));
+		while(1)
+		{
+			//ToDo: add error handling?
+		}
+	}
 }
 
 void AppTask(void)
-{
-	
-	//Mi-Wi connection state machine:
-	//disconnected
-		
-	//connected
-		//remote control state machine:
+{	
+	//remote control state machine:
 	switch(appState)
 	{
 		case DISCONNECTED:
