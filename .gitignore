@@ -1,4 +1,6 @@
 #ignore compiled files
 /R30_RC/R30_RC_proj/Debug/
 /R30_RC/R30_RC_proj/Release/
+/R30_RC/R30_FC_proj/Debug/
+/R30_RC/R30_FC_proj/Release/
 /.vs/
