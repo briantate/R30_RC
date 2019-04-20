@@ -44,11 +44,11 @@ int main (void)
 	system_init();
 	CustomBoardInit();
 	delay_init(); //used to to initialize radio interface
-//	SYS_TimerInit(); //used as a symbol timer by the MiWi stack
+	SYS_TimerInit(); //used as a symbol timer by the MiWi stack
 	
 	AppInit();
 
-//	TransceiverConfig(); //initialize pins to the radio
+	TransceiverConfig(); //initialize pins to the radio
 	
 	//check switch state at startup to determine network role
 	netRole = 0;//port_pin_get_input_level(SW0_PIN);   
@@ -62,12 +62,12 @@ int main (void)
 
 	DEBUG_OUTPUT(printf("\r\n"));
 	
-//	NetworkInit(NETWORK_FREEZER_OFF, netRole);
+	NetworkInit(NETWORK_FREEZER_OFF, netRole);
 	
 	while(1)
 	{
 		AppTask();
-//		NetworkTasks();
+		NetworkTasks();
 	}
 }
 

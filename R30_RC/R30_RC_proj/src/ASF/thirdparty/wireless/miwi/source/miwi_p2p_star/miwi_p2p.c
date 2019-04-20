@@ -653,7 +653,7 @@ void P2PTasks(void)
 										dataLen, dataPtr,0, true, CommandConfCallback);
                                     #endif 
                                 #endif
-								delay_ms (100);
+//								delay_ms (100);
                                 #if defined(PROTOCOL_STAR)
                                     MiApp_BroadcastConnectionTable ();  // Broad Cast the CT on join
                                 #endif

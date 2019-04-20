@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "R30_RC_proj", "R30_RC_proj\R30_RC_proj.cproj", "{DCE6C7E3-EE26-4D79-826B-08594B9AD897}"
 EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "R30_FC_proj", "R30_FC_proj\R30_FC_proj.cproj", "{A622C8A4-7851-4E0B-BA93-91AD70CC393A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -15,6 +17,10 @@ Global
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.Build.0 = Debug|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.ActiveCfg = Release|ARM
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.Build.0 = Release|ARM
+		{A622C8A4-7851-4E0B-BA93-91AD70CC393A}.Debug|ARM.ActiveCfg = Debug|ARM
+		{A622C8A4-7851-4E0B-BA93-91AD70CC393A}.Debug|ARM.Build.0 = Debug|ARM
+		{A622C8A4-7851-4E0B-BA93-91AD70CC393A}.Release|ARM.ActiveCfg = Release|ARM
+		{A622C8A4-7851-4E0B-BA93-91AD70CC393A}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

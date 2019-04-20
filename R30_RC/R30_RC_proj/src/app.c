@@ -24,17 +24,18 @@ static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
 static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 uint8_t msghandledemo = 0;
 uint8_t extintCount = 0;
+uint32_t timeoutCount = 0; //timeout variable
+
 
 static bool txComplete = true;
+static bool connected = true;
 
 typedef enum
 {
 	DISCONNECTED,
 	WAIT,
 	SAMPLE,
-	SEND,
-	RECEIVE,
-	PROCESS	
+	SEND
 }APP_STATE_T;
 
 //handles for joysticks
@@ -96,7 +97,10 @@ void AppTask(void)
 			//blink red LED every 500ms
 			//try to connect
 				//timeout?
-			appState = WAIT;
+			if(connected)
+			{
+				appState = WAIT;
+			}
 			break;
 		}
 		case WAIT:
@@ -124,49 +128,40 @@ void AppTask(void)
 			sendDataBuffer[5] = (uint8_t)Joystick_GetHorzDirection(rightJoystick);
 			sendDataBuffer[6] = (uint8_t)Joystick_GetVert(rightJoystick);
 			sendDataBuffer[7] = (uint8_t)Joystick_GetVertDirection(rightJoystick);
+			
 			DEBUG_OUTPUT(printf("L H:%03i, D: %01i, V:%03i, D: %01i, R H:%03i, D: %01i, V:%03i, D: %01i\r\n",\
 				sendDataBuffer[0], sendDataBuffer[1],\
 				sendDataBuffer[2], sendDataBuffer[3],\
 				sendDataBuffer[4], sendDataBuffer[5],\
-				sendDataBuffer[6], sendDataBuffer[7]);)
-					
+				sendDataBuffer[6], sendDataBuffer[7]);)					
 			appState = SEND;
 			break;
 		}
 		case SEND:
 		{
-// 			//send TX payload
-// 			//***ToDo: change to unicast
-// 			uint16_t broadcastAddress = 0xFFFF;
-// 			DEBUG_OUTPUT(printf("sending char: %u\r\n", sendDataBuffer[0]));
-// 
-// 
-// 			//wait until transceiver is ready to send?
-// 			txComplete = false;
-// 			bool res = MiApp_SendData(SHORT_ADDR_LEN, (uint8_t *)&broadcastAddress,
-// 				SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, dataConfcb);
-// 			if(!res)
-// 			{
-// 				printf("send fail\r\n");
-// 			}
-// 
-// 			//Wait until the transmission is complete before sleeping
-// 			while(txComplete != true)
-// 			{
-// 				P2PTasks();
-// 			}
-			appState = RECEIVE;
-			break;
-		}
-		case RECEIVE:
-		{
-			//receive data?
-			appState = PROCESS;
-			break;
-		}
-		case PROCESS:
-		{
-			//process RX payload
+			//send TX payload
+			//***ToDo: change to unicast
+			uint16_t broadcastAddress = 0xFFFF;
+
+			txComplete = false;
+			bool res = MiApp_SendData(SHORT_ADDR_LEN, (uint8_t *)&broadcastAddress,
+				SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, dataConfcb);
+			if(!res)
+			{
+				printf("send fail\r\n");
+			}
+
+			//Wait until the transmission is complete			
+			while(txComplete != true)
+			{	
+				P2PTasks();             //Let Mi-Wi stack process data while waiting for callback
+				if(timeoutCount > 0xFF) //ToDo: sometimes dataConfCallback is not called - check into this
+				{					
+					break;              //no dataConfcb -- discard the packet and continue
+				}
+				timeoutCount++;
+			}
+			timeoutCount = 0;
 			appState = WAIT;
 			break;
 		}
@@ -178,7 +173,7 @@ static void dataConfcb(uint8_t handle, miwi_status_t status, uint8_t* msgPointer
 	txComplete = true;
 	if(status != SUCCESS)
 	{
-		printf("callback: fail\r\n");
+		printf("[dataConfcb] error\r\n");
 	}
 // 	
 // 		SUCCESS = 0,
@@ -220,7 +215,7 @@ void ReceivedDataIndication (RECEIVED_MESSAGE *ind)
 	
 	for(uint8_t i=startPayloadIndex; i<rxMessage.PayloadSize;i++)
 	{
-		DEBUG_OUTPUT(putchar(rxMessage.Payload[i]));
+		DEBUG_OUTPUT(printf("%03i ",ind->Payload[i]));
 	}
 	DEBUG_OUTPUT(printf("\r\n"));
 	
