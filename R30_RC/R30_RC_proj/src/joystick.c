@@ -69,7 +69,7 @@ uint8_t Joystick_GetY( joystickPtr joystickInstance){
 }
 
 bool Joystick_GetYpolarity(joystickPtr joystickInstance){
-	return joystickInstance->yPolarity;
+	return !(joystickInstance->yPolarity);  //Inverting because this JS +Y is reverse
 }
    
 	
