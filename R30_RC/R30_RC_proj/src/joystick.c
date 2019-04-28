@@ -24,14 +24,14 @@ void joystick_filter(joystickPtr joystickInstance);
   
 struct JOYSTICK
 {
-	uint8_t horzRaw;           //raw horizontal value
-	uint8_t horzFiltered;      //filtered horizontal value
-	ADC_ReadVal_t readHorz;    //pointer to func to read horizontal adc value
-	bool horzDir;              //right = positive, left = negative
-	uint8_t vertRaw;           //raw vertical value
-	uint8_t vertFiltered;      //filtered vertical value
-	ADC_ReadVal_t readVert;    //pointer to func to read vertical adc value
-	bool vertDir;              //up = positive, down = negative
+	uint8_t xRaw;           //raw horizontal value
+	uint8_t xFiltered;      //filtered horizontal value
+	ADC_ReadVal_t readXadc;    //pointer to func to read horizontal adc value
+	bool xPolarity;              //right = positive, left = negative
+	uint8_t yRaw;           //raw vertical value
+	uint8_t yFiltered;      //filtered vertical value
+	ADC_ReadVal_t readYadc;    //pointer to func to read vertical adc value
+	bool yPolarity;              //up = positive, down = negative
 };
   
 #define MAX_JOYSTICKS 2 //arbitrary limit -- my game controller has joysticks
@@ -43,10 +43,10 @@ joystickPtr Joystick_Create(ADC_ReadVal_t readHorz, ADC_ReadVal_t readVert){
 	if(numberOfJoysticks < MAX_JOYSTICKS){
 		joystick = &JoystickPool[numberOfJoysticks++];
 		//initialize the object
-		joystick->horzRaw = CENTER_VAL;
-		joystick->vertRaw = CENTER_VAL;
-		joystick->readHorz = readHorz;
-		joystick->readVert = readVert;
+		joystick->xRaw = CENTER_VAL;
+		joystick->yRaw = CENTER_VAL;
+		joystick->readXadc = readHorz;
+		joystick->readYadc = readVert;
 	}
 	  
 	return joystick;
@@ -56,28 +56,28 @@ void Joystick_Delete(joystickPtr joystickInstance){
 	//to do -- shouldn't really ever need to delete a joystick...
 }
   
-uint8_t Joystick_GetHorz( joystickPtr joystickInstance){
-	return joystickInstance->horzFiltered;
+uint8_t Joystick_GetX( joystickPtr joystickInstance){
+	return joystickInstance->xFiltered;
 }
 
-bool Joystick_GetHorzDirection(joystickPtr joystickInstance){
-	return joystickInstance->horzDir;
+bool Joystick_GetXpolarity(joystickPtr joystickInstance){
+	return joystickInstance->xPolarity;
 }
 
-uint8_t Joystick_GetVert( joystickPtr joystickInstance){
-	return joystickInstance->vertFiltered;
+uint8_t Joystick_GetY( joystickPtr joystickInstance){
+	return joystickInstance->yFiltered;
 }
 
-bool Joystick_GetVertDirection(joystickPtr joystickInstance){
-	return joystickInstance->vertDir;
+bool Joystick_GetYpolarity(joystickPtr joystickInstance){
+	return joystickInstance->yPolarity;
 }
    
 	
 void Joystick_Measure(joystickPtr joystickInstance){
 	
 	//call injected ADC functions	 
-	joystickInstance->horzRaw = joystickInstance->readHorz();
-	joystickInstance->vertRaw = joystickInstance->readVert();
+	joystickInstance->xRaw = joystickInstance->readXadc();
+	joystickInstance->yRaw = joystickInstance->readYadc();
 		 
 	joystick_filter(joystickInstance);
 		 
@@ -94,46 +94,46 @@ void Joystick_Measure(joystickPtr joystickInstance){
 void joystick_filter(joystickPtr joystickInstance){
 	
 	//filter vertical
-	if (joystickInstance->vertRaw > FORWARD_VAL){
-		joystickInstance->vertFiltered = joystickInstance->vertRaw - FORWARD_VAL; 
-		joystickInstance->vertDir = POSITIVE;
+	if (joystickInstance->yRaw > FORWARD_VAL){
+		joystickInstance->yFiltered = joystickInstance->yRaw - FORWARD_VAL; 
+		joystickInstance->yPolarity = POSITIVE;
 	}
-	else if (joystickInstance->vertRaw < BACKWARD_VAL){
-		joystickInstance->vertFiltered = BACKWARD_VAL - joystickInstance->vertRaw;
-		joystickInstance->vertDir = NEGATIVE;
+	else if (joystickInstance->yRaw < BACKWARD_VAL){
+		joystickInstance->yFiltered = BACKWARD_VAL - joystickInstance->yRaw;
+		joystickInstance->yPolarity = NEGATIVE;
 	}
 	else{
-		joystickInstance->vertFiltered = 0;
-		joystickInstance->vertDir = POSITIVE;
+		joystickInstance->yFiltered = 0;
+		joystickInstance->yPolarity = POSITIVE;
 	}
 	
 	//make sure it doesn't overflow...
-	if(joystickInstance->vertFiltered > MAX_VAL){
-		joystickInstance->vertFiltered = MAX_VAL;
+	if(joystickInstance->yFiltered > MAX_VAL){
+		joystickInstance->yFiltered = MAX_VAL;
 	}
 	
-	joystickInstance->vertFiltered = 2*joystickInstance->vertFiltered; //multiply by 2 since we only get half the resolution
+	joystickInstance->yFiltered = 2*joystickInstance->yFiltered; //multiply by 2 since we only get half the resolution
 	
 	
 	//filter horizontal
-	if (joystickInstance->horzRaw > FORWARD_VAL){
-		joystickInstance->horzFiltered = joystickInstance->horzRaw - FORWARD_VAL;
-		joystickInstance->horzDir = POSITIVE;
+	if (joystickInstance->xRaw > FORWARD_VAL){
+		joystickInstance->xFiltered = joystickInstance->xRaw - FORWARD_VAL;
+		joystickInstance->xPolarity = POSITIVE;
 	}
-	else if (joystickInstance->horzRaw < BACKWARD_VAL){
-		joystickInstance->horzFiltered = BACKWARD_VAL - joystickInstance->horzRaw;
-		joystickInstance->horzDir = NEGATIVE;
+	else if (joystickInstance->xRaw < BACKWARD_VAL){
+		joystickInstance->xFiltered = BACKWARD_VAL - joystickInstance->xRaw;
+		joystickInstance->xPolarity = NEGATIVE;
 	}
 	else{
-		joystickInstance->horzFiltered = 0;
-		joystickInstance->horzDir = POSITIVE;
+		joystickInstance->xFiltered = 0;
+		joystickInstance->xPolarity = POSITIVE;
 	}
 	  
 	//make sure it doesn't overflow...
-	if(joystickInstance->horzFiltered > MAX_VAL){
-		joystickInstance->horzFiltered = MAX_VAL;
+	if(joystickInstance->xFiltered > MAX_VAL){
+		joystickInstance->xFiltered = MAX_VAL;
 	}
 	  
-	joystickInstance->horzFiltered = 2*joystickInstance->horzFiltered; //multiply by 2 since we only get half the resolution
+	joystickInstance->xFiltered = 2*joystickInstance->xFiltered; //multiply by 2 since we only get half the resolution
 }
  

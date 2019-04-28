@@ -14,12 +14,11 @@
 #include "analog.h"
 #include "joystick.h"
 
-#define SEND_BUFFER_SIZE  8
-#define RECEIVE_BUFFER_SIZE 8
+#define SEND_BUFFER_SIZE  6
+#define RECEIVE_BUFFER_SIZE 6
 
 static bool switchLastState = false;
 static bool switchState = false;
-static uint8_t cntVal = 0;
 static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
 static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 uint8_t msghandledemo = 0;
@@ -37,6 +36,15 @@ typedef enum
 	SAMPLE,
 	SEND
 }APP_STATE_T;
+
+#define L_XDIR_POS 0
+#define L_YDIR_POS 1
+#define R_XDIR_POS 2
+#define R_YDIR_POS 3
+#define L_BUTTON_POS 0
+#define R_BUTTON_POS 1
+#define A_BUTTON_POS 2
+#define B_BUTTON_POS 3
 
 //handles for joysticks
 volatile joystickPtr leftJoystick;
@@ -120,20 +128,19 @@ void AppTask(void)
 			Joystick_Measure(leftJoystick);
 			Joystick_Measure(rightJoystick);
 			//create TX payload
-			sendDataBuffer[0] = (uint8_t)Joystick_GetHorz(leftJoystick);
-			sendDataBuffer[1] = (uint8_t)Joystick_GetHorzDirection(leftJoystick);
-			sendDataBuffer[2] = (uint8_t)Joystick_GetVert(leftJoystick);
-			sendDataBuffer[3] = (uint8_t)Joystick_GetVertDirection(leftJoystick);
-			sendDataBuffer[4] = (uint8_t)Joystick_GetHorz(rightJoystick);
-			sendDataBuffer[5] = (uint8_t)Joystick_GetHorzDirection(rightJoystick);
-			sendDataBuffer[6] = (uint8_t)Joystick_GetVert(rightJoystick);
-			sendDataBuffer[7] = (uint8_t)Joystick_GetVertDirection(rightJoystick);
-			
-			DEBUG_OUTPUT(printf("L H:%03i, D: %01i, V:%03i, D: %01i, R H:%03i, D: %01i, V:%03i, D: %01i\r\n",\
-				sendDataBuffer[0], sendDataBuffer[1],\
-				sendDataBuffer[2], sendDataBuffer[3],\
-				sendDataBuffer[4], sendDataBuffer[5],\
-				sendDataBuffer[6], sendDataBuffer[7]);)					
+			sendDataBuffer[0] = (uint8_t)Joystick_GetX(leftJoystick);
+			sendDataBuffer[1] = (uint8_t)Joystick_GetY(leftJoystick);
+			sendDataBuffer[2] = (uint8_t)Joystick_GetX(rightJoystick);
+			sendDataBuffer[3] = (uint8_t)Joystick_GetY(rightJoystick);
+			//pack direction bits
+			sendDataBuffer[4] = (Joystick_GetXpolarity(leftJoystick)   << L_XDIR_POS) |
+								(Joystick_GetYpolarity(leftJoystick)   << L_YDIR_POS) |
+								(Joystick_GetXpolarity(rightJoystick)  << R_XDIR_POS) |
+								(Joystick_GetYpolarity(rightJoystick)  << R_YDIR_POS) ;
+
+			//pack button data
+			sendDataBuffer[5] = 0x0; //no button data yet
+				
 			appState = SEND;
 			break;
 		}

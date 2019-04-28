@@ -60,7 +60,7 @@
 	 * inputs: pointer to joystick object instance
 	 * output: horizontal measurement of distance from center
 	 */
-	uint8_t Joystick_GetHorz( joystickPtr joystickInstance);
+	uint8_t Joystick_GetX( joystickPtr joystickInstance);
 	
 	/*
 	 * Joystick_GetHorzDirection
@@ -70,7 +70,7 @@
 	 *         true  = > center value
 	 *         false = < center value
 	 */
-	bool Joystick_GetHorzDirection(joystickPtr joystickInstance);
+	bool Joystick_GetXpolarity(joystickPtr joystickInstance);
 	
 	/*
 	 * Joystick_GetVert
@@ -78,7 +78,7 @@
 	 * inputs: pointer to joystick object instance
 	 * output: vertical measurement of distance from center
 	 */
-	uint8_t Joystick_GetVert( joystickPtr joystickInstance);
+	uint8_t Joystick_GetY( joystickPtr joystickInstance);
 	
 	/*
 	 * Joystick_GetVertDirection
@@ -88,7 +88,7 @@
 	 *         true  = > center value
 	 *         false = < center value
 	 */
-	bool Joystick_GetVertDirection(joystickPtr joystickInstance);
+	bool Joystick_GetYpolarity(joystickPtr joystickInstance);
 
 
 #endif /* JOYSTICK_H_ */
