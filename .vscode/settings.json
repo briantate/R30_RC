@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "parts.h": "c",
+        "trx_access.h": "c",
+        "extint.h": "c",
+        "conf_trx_access.h": "c",
+        "hbridge.h": "c",
+        "userio.h": "c",
+        "main.h": "c"
+    }
+}

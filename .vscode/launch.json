@@ -1,0 +1,57 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Launch (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/debug/bin/car.elf",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "ATSAMC21J18A",
+            "runToEntryPoint": "main",
+            "svdFile": "${workspaceFolder}/utils/ATSAMC21J18A.svd",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/at91samdXX.cfg"
+            ],
+            "preLaunchCommands": [
+                "set mem inaccessible-by-default off",
+                "monitor reset"
+            ],
+            "postLaunchCommands": [
+                "monitor reset init",
+                "monitor sleep 200"
+            ],
+            // "showDevDebugOutput": "raw",
+            // "preLaunchTask": "Flash"
+        },
+
+        {
+            "name": "Debug Attach (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/debug/bin/car.elf",
+            "type": "cortex-debug",
+            "request": "attach",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "ATSAMC21J18A",
+            "svdFile": "${workspaceFolder}/utils/ATSAMC21J18A.svd",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/at91samdXX.cfg",
+            ],
+            // "showDevDebugOutput": "raw",
+            "preLaunchTask": "",
+        },
+    ],
+    "inputs": [
+        {
+            "id": "device.host",
+            "type": "promptString",
+            "default": "host.docker.internal:3333",
+            "description": "The local hostname with port for GDB to connect to"
+        }
+    ]
+}

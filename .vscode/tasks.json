@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "openocd -f ${workspaceFolder}/utils/samc21_board.cfg -c \"transport select swd\" -c \"program build/release/bin/car.elf verify\" -c \"reset halt\" -c shutdown",
+            // "command": "openocd -f atmel_samc21_xplained_pro.cfg -c \"transport select swd\" -c \"program C21_ASF_RC_CAR/build/release/bin/car.elf verify\" -c \"reset halt\" -c shutdown",
+            // "command": "openocd -f ${workspaceFolder}/utils/clear_bootprot_and_flash.cfg",
+
+            "windows": {
+                "options": {
+                  "shell": {
+                      "executable": "cmd.exe",
+                      "args": ["/c"]
+                  }
+                }
+              },  
+            "problemMatcher": [],
+            // "dependsOn": [ "Build" ]
+        },
+        {
+            "label": "Build",
+            "type": "cmake",
+            "command": "build",
+            "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            // This must be commented out to run on Linux.
+            // "options": {
+            //     "shell": {
+            //         "executable": "cmd.exe",
+            //         "args": [ "/c" ]
+            //     }
+            // }
+        }
+
+    ]
+}

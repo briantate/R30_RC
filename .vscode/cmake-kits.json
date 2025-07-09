@@ -1,0 +1,6 @@
+[
+    {
+        "name": "toolchain-arm",
+        "toolchainFile": "${workspaceFolder}/C21_ASF_RC_CAR/toolchain-arm.cmake"
+    }
+]
