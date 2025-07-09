@@ -3,7 +3,7 @@
  *
  * \brief Commonly used includes, types and macros.
  *
- * Copyright (c) 2012-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2012-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -129,7 +129,9 @@
 #if defined(__CC_ARM)
 #  define __always_inline             __forceinline
 #elif (defined __GNUC__)
+#ifndef __always_inline 
 #  define __always_inline             __attribute__((__always_inline__))
+#endif
 #elif (defined __ICCARM__)
 #  define __always_inline             _Pragma("inline=forced")
 #endif
@@ -1025,7 +1027,7 @@ typedef double                  F64;  //!< 64-bit floating-point number.
 #if defined(__ICCARM__)
 #define nop()               __no_operation()
 #elif defined(__GNUC__)
-#define nop()               (__NOP())
+#define nop()               __NOP()
 #endif
 
 #define FLASH_DECLARE(x)  const x

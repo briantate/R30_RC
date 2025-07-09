@@ -256,6 +256,7 @@ void Reset_Handler(void)
  */
 void Dummy_Handler(void)
 {
+        NVIC_SystemReset();
         while (1) {
         }
 }

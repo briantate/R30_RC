@@ -35,6 +35,7 @@
  */
 
 #include "delay.h"
+#include "systick_counter.h"
 
 /**
  * Value used to calculate ms delay. Default to be used with a 8MHz clock;

@@ -4,7 +4,7 @@
  * @brief
  *
  *
- * Copyright (c) 2013-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2013-2020 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -37,7 +37,7 @@
 #include "tc.h"
 #include "tc_interrupt.h"
 #include "hw_timer.h"
-#if SAMD || SAMR21 || SAML21 || SAMR30 || SAMR34 || SAMR35
+#if SAMD || SAMR21 || SAML21 || SAMR30 || SAMR34 || SAMR35 || (WLR089)
 #include "clock.h"
 #include <system_interrupt.h>
 #else
@@ -75,13 +75,6 @@ uint16_t tmr_read_count(void)
 	return ((uint16_t)tc_get_count_value(&module_inst));
 }
 
-/*! \brief  write the given timer count to register
- */
-void tmr_write_count(uint16_t count)
-{
-	tc_set_count_value(&module_inst, (uint32_t)count);
-}
-
 /*! \brief  to disable compare interrupt
  */
 void tmr_disable_cc_interrupt(void)
@@ -93,6 +86,7 @@ void tmr_disable_cc_interrupt(void)
  */
 void tmr_enable_cc_interrupt(void)
 {
+	tc_clear_status(&module_inst, TC_STATUS_CHANNEL_0_MATCH);
 	tc_enable_callback(&module_inst, TC_CALLBACK_CC_CHANNEL0);
 }
 

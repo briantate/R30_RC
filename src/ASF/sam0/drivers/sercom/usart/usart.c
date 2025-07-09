@@ -3,7 +3,7 @@
  *
  * \brief SAM SERCOM USART Driver
  *
- * Copyright (c) 2012-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2012-2020 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -56,7 +56,17 @@ static enum status_code _usart_set_config(
 
 	/* Index for generic clock */
 	uint32_t sercom_index = _sercom_get_sercom_inst_index(module->hw);
-	uint32_t gclk_index   = sercom_index + SERCOM0_GCLK_ID_CORE;
+	uint32_t gclk_index;
+
+#if (SAML21) || (SAMR30) || (SAMR34) || (SAMR35) || (SAMC21) || (WLR089)
+	if (sercom_index == 5) {
+		gclk_index   = SERCOM5_GCLK_ID_CORE;
+	} else {
+		gclk_index   = sercom_index + SERCOM0_GCLK_ID_CORE;
+	}
+#else
+	gclk_index   = sercom_index + SERCOM0_GCLK_ID_CORE;
+#endif
 
 	/* Cache new register values to minimize the number of register writes */
 	uint32_t ctrla = 0;
@@ -159,9 +169,6 @@ static enum status_code _usart_set_config(
 		usart_hw->RXPL.reg = config->receive_pulse_length;
 	}
 #endif
-
-	/* Wait until synchronization is complete */
-	_usart_wait_for_sync(module);
 
 	/*Set baud val */
 	usart_hw->BAUD.reg = baud;
@@ -329,7 +336,7 @@ enum status_code usart_init(
 #if (SAML22) || (SAMC20) 
 	pm_index	= sercom_index + MCLK_APBCMASK_SERCOM0_Pos;
 	gclk_index	= sercom_index + SERCOM0_GCLK_ID_CORE;
-#elif (SAML21) || (SAMR30) || (SAMR34) || (SAMR35)
+#elif (SAML21) || (SAMR30) || (SAMR34) || (SAMR35) || (WLR089)
 	if (sercom_index == 5) {
 		pm_index     = MCLK_APBDMASK_SERCOM5_Pos;
 		gclk_index   = SERCOM5_GCLK_ID_CORE;
@@ -361,7 +368,7 @@ enum status_code usart_init(
 	}
 
 	/* Turn on module in PM */
-#if (SAML21) || (SAMR30) || (SAMR34) || (SAMR35)
+#if (SAML21) || (SAMR30) || (SAMR34) || (SAMR35) || (WLR089)
 	if (sercom_index == 5) {
 		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBD, 1 << pm_index);
 	} else {
@@ -495,9 +502,6 @@ enum status_code usart_write_wait(
 	}
 #endif
 
-	/* Wait until synchronization is complete */
-	_usart_wait_for_sync(module);
-
 	/* Write data to USART module */
 	usart_hw->DATA.reg = tx_data;
 
@@ -561,9 +565,6 @@ enum status_code usart_read_wait(
 		/* Return error code */
 		return STATUS_BUSY;
 	}
-
-	/* Wait until synchronization is complete */
-	_usart_wait_for_sync(module);
 
 	/* Read out the status code and mask away all but the 3 LSBs*/
 	error_code = (uint8_t)(usart_hw->STATUS.reg & SERCOM_USART_STATUS_MASK);
@@ -668,9 +669,6 @@ enum status_code usart_write_buffer_wait(
 
 	/* Get a pointer to the hardware module instance */
 	SercomUsart *const usart_hw = &(module->hw->USART);
-
-	/* Wait until synchronization is complete */
-	_usart_wait_for_sync(module);
 
 	uint16_t tx_pos = 0;
 

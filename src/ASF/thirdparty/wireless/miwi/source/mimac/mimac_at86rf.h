@@ -3,7 +3,7 @@
 *
 * \brief MAC Layer Abstraction for AT86RFx interface
 *
-* Copyright (c) 2018 Microchip Technology Inc. and its subsidiaries. 
+* Copyright (c) 2018 - 2019 Microchip Technology Inc. and its subsidiaries. 
 *
 * \asf_license_start
 *
@@ -42,7 +42,7 @@
 
 
 	#if defined(PROTOCOL_P2P) || defined (PROTOCOL_STAR)
-        #include "miwi_p2p.h"
+        #include "miwi_p2p_star.h"
 		#include "miwi_config_p2p.h"
     #endif
 
@@ -55,10 +55,12 @@
 	#define FULL_CHANNEL_MAP        0x000007FF
 	#define FIRST_CHANNEL_NUM      0
 	#define LAST_CHANNEL_NUM       10
+	#define MAX_FRAME_TX_TIME      10
 	#elif (defined(PHY_AT86RF233))
 	#define FULL_CHANNEL_MAP        0x07FFF800
 	#define FIRST_CHANNEL_NUM      11
 	#define LAST_CHANNEL_NUM       26
+	#define MAX_FRAME_TX_TIME      5
 	#endif
 	#define ANUMSUPERFRAMESLOTS			(16)
 	#define ABASESLOTDURATION			(60)
@@ -123,12 +125,6 @@
 
 
 	/*- Types ------------------------------------------------------------------*/
-	typedef struct PHY_DataInd_t {
-		uint8_t *data; // Pointer to Data
-		uint8_t size;   // Size of the frame
-		uint8_t lqi;    // Link Quality Index
-		int8_t rssi;    // RSSI
-	} PHY_DataInd_t;
 
 
     /***************************************************************************

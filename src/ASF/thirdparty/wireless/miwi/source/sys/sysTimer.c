@@ -3,7 +3,7 @@
 *
 * \brief System timer implementation
 *
-* Copyright (c) 2018 Microchip Technology Inc. and its subsidiaries. 
+* Copyright (c) 2018 - 2020 Microchip Technology Inc. and its subsidiaries. 
 *
 * \asf_license_start
 *
@@ -45,7 +45,7 @@ static void SYS_HwOverflow_Cb(void);
 
 /*- Variables --------------------------------------------------------------*/
 static SYS_Timer_t *timers;
-volatile uint8_t SysTimerIrqCount;
+volatile uint32_t SysTimerIrqCount;
 
 volatile uint8_t timerExtension1,timerExtension2;
 
@@ -116,7 +116,7 @@ bool SYS_TimerStarted(SYS_Timer_t *timer)
 void SYS_TimerTaskHandler(void)
 {
 	uint32_t elapsed;
-	uint8_t cnt;
+	uint32_t cnt;
 	irqflags_t flags;
 
 	if (0 == SysTimerIrqCount) {
@@ -213,14 +213,8 @@ uint32_t MiWi_TickGet(void)
 {
     MIWI_TICK currentTime;
 	uint8_t current_timerExtension1 = timerExtension1;
-    
-    /* disable the timer to prevent roll over of the lower 16 bits 
-	while before/after reading of the extension */
-	tmr_disable_ovf_interrupt();
 
 	currentTime.word.w0 = common_tc_read_count();
-    /* enable the timer*/
-	tmr_enable_ovf_interrupt();
 
 	/* NOP to allow the interrupt to process before copying timerExtension1 */
 	nop();
@@ -289,19 +283,70 @@ static void SYS_HwOverflow_Cb(void)
 	}
 }
 
+/*********************************************************************
+* Function:         void SYS_TimerAdjust_SleptTime
+*
+* PreCondition:     none
+*
+* Input:		    sleeptime  - Total time slept by Application in  
+*                                milliseconds
+*
+* Output:		    none
+*
+* Side Effects:	    none
+*
+* Overview:		    This function adjusts the duration for which
+*                   application slept and correct the timers
+*
+* Note:			    none
+********************************************************************/
 void SYS_TimerAdjust_SleptTime(uint32_t sleeptime)
 {
-	SYS_Timer_t* timer = timers;
-	while (timer)
-	{
-		if (timer->timeout > sleeptime)
+    irqflags_t flags;
+
+    /* Enter a critical section */
+    flags = cpu_irq_save();
+    SysTimerIrqCount = (sleeptime / SYS_TIMER_INTERVAL);
+    /* Leave the critical section */
+    cpu_irq_restore(flags);
+
+    /* Stop and Start Timers */
+    common_tc_overflow_stop();
+    common_tc_compare_stop();
+    set_common_tc_overflow_callback(SYS_HwOverflow_Cb);
+    set_common_tc_expiry_callback(SYS_HwExpiry_Cb);
+    common_tc_init();
+    common_tc_delay(SYS_TIMER_INTERVAL * MS);
+}
+
+/*********************************************************************
+* Function:         uint32_t SYS_TimerRemainingTimeout
+*
+* PreCondition:     none
+*
+* Input:		    SYS_Timer_t *timer  - Timer for which the 
+*                                         remaining timeout is required
+*
+* Output:		    uint32_t - Total remaining timeout
+*
+* Side Effects:	    none
+*
+* Overview:		    This function returns total timeout for the requested
+*                   timer to expire by traversing through the list
+*
+* Note:			    none
+********************************************************************/
+uint32_t SYS_TimerRemainingTimeout(struct SYS_Timer_t *timer)
+{
+	uint32_t remainingTime = 0;
+	SYS_Timer_t *currTimer = timers;
+	while (currTimer){
+		remainingTime += currTimer->timeout;
+		if (currTimer == timer)
 		{
-			timer->timeout -= sleeptime;
+			return remainingTime;
 		}
-		else
-		{
-			timer->timeout = 0;
-		}
-		timer = timer->next;
+		currTimer = currTimer->next;
 	}
+	return 0;
 }

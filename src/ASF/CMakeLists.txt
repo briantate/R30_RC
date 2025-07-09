@@ -1,0 +1,123 @@
+# src/ASF
+
+add_library(ASF 
+    common/utils/interrupt/interrupt_sam_nvic.c 
+    common2/services/delay/sam0/systick_counter.c 
+    sam0/drivers/extint/extint_sam_l_c/extint.c
+    sam0/drivers/extint/extint_callback.c
+    sam0/drivers/nvm/nvm.c
+    sam0/drivers/port/port.c
+    sam0/drivers/rtc/rtc_sam_l_c/rtc_count_interrupt.c
+    sam0/drivers/rtc/rtc_sam_l_c/rtc_count.c
+    sam0/drivers/sercom/sercom_interrupt.c
+    sam0/drivers/sercom/sercom.c
+    sam0/drivers/sercom/spi/spi.c
+    sam0/drivers/sercom/usart/usart_interrupt.c
+    sam0/drivers/sercom/usart/usart.c
+    sam0/drivers/system/system.c
+    sam0/drivers/system/clock/clock_samr30/clock.c
+    sam0/drivers/system/clock/clock_samr30/gclk.c
+    sam0/drivers/system/interrupt/system_interrupt.c
+    sam0/drivers/system/pinmux/pinmux.c 
+    sam0/drivers/tc/tc_interrupt.c
+    sam0/drivers/tc/tc_sam_l_c/tc.c
+    sam0/utils/cmsis/samr30/source/system_samr30.c
+    sam0/utils/cmsis/samr30/source/gcc/startup_samr30.c
+    sam0/utils/stdio/read.c
+    sam0/utils/stdio/write.c
+    sam0/utils/syscalls/gcc/syscalls.c
+    thirdparty/wireless/addons/sio2host/uart/sio2host.c
+    thirdparty/wireless/miwi/services/pds/src/nopds/fakepds.c
+    thirdparty/wireless/miwi/services/pds/src/nv/D_Nv.c
+    thirdparty/wireless/miwi/services/pds/src/nv/S_Nv-SamR21.c
+    thirdparty/wireless/miwi/services/pds/src/nv/External/D_XNv-SamR21.c
+    thirdparty/wireless/miwi/services/pds/src/nv/External/S_Nv-External.c
+    thirdparty/wireless/miwi/services/pds/src/nv/External/S_XNv.c
+    thirdparty/wireless/miwi/services/pds/src/wl/wlPdsDataServer.c
+    thirdparty/wireless/miwi/services/pds/src/wl/wlPdsInit.c
+    thirdparty/wireless/miwi/services/pds/src/wl/wlPdsTaskManager.c
+    thirdparty/wireless/miwi/services/pds/src/wl/wlPdsTypesConverter.c
+    thirdparty/wireless/miwi/services/sleep_mgr/sam0/sleep_mgr.c
+    thirdparty/wireless/miwi/source/mimac/phy/at86rf212b/phy.c
+    thirdparty/wireless/miwi/source/mimac/mimac_at86rf.c
+    thirdparty/wireless/miwi/source/miwi_p2p_star/miwi_p2p_pds.c
+    thirdparty/wireless/miwi/source/miwi_p2p_star/miwi_p2p_star.c
+    thirdparty/wireless/miwi/source/sys/mimem.c
+    thirdparty/wireless/miwi/source/sys/miqueue.c
+    thirdparty/wireless/miwi/source/sys/sysTimer.c
+    thirdparty/wireless/services/common_hw_timer/sam0/hw_timer.c
+    thirdparty/wireless/services/nvm/sam0/sam_nvm.c
+    thirdparty/wireless/services/sal/at86rf2xx/src/sal.c
+    thirdparty/wireless/services/trx_access/trx_access.c
+)
+
+add_subdirectory(common)
+add_subdirectory(common2/services/delay/sam0)
+add_subdirectory(sam0)
+add_subdirectory(thirdparty)
+
+target_include_directories(ASF PUBLIC
+    .
+    common/boards
+    common/services/serial
+    common/services/serial/sam0_usart
+    common/utils
+    common/utils/interrupt
+    common2/services/delay
+    common2/services/delay/sam0
+    config
+    sam0/drivers/extint
+    sam0/drivers/nvm
+    sam0/drivers/port
+    sam0/drivers/rtc
+    sam0/drivers/sercom
+    sam0/drivers/sercom/spi
+    sam0/drivers/sercom/usart
+    sam0/drivers/system
+    sam0/drivers/system/clock
+    sam0/drivers/system/clock/clock_samr30
+    sam0/drivers/system/interrupt
+    sam0/drivers/system/interrupt/system_interrupt_samr30
+    sam0/drivers/system/pinmux
+    sam0/drivers/system/power/power_sam_l
+    sam0/drivers/system/reset/reset_sam_l
+    sam0/drivers/tc
+    sam0/utils
+    sam0/utils/cmsis/samr30/include
+    sam0/utils/cmsis/samr30/include/component
+    sam0/utils/cmsis/samr30/include/instance
+    sam0/utils/cmsis/samr30/include/pio
+    sam0/utils/cmsis/samr30/source
+    sam0/utils/header_files
+    sam0/utils/preprocessor
+    sam0/utils/stdio/stdio_serial
+    thirdparty/CMSIS/Include
+    thirdparty/wireless/addons/sio2host/uart
+    thirdparty/wireless/miwi/include
+    thirdparty/wireless/miwi/services/pds/inc
+    thirdparty/wireless/miwi/services/pds/inc/nv
+    thirdparty/wireless/miwi/services/pds/inc/nv/External
+    thirdparty/wireless/miwi/services/pds/inc/wl
+    thirdparty/wireless/miwi/services/sleep_mgr
+    thirdparty/wireless/miwi/source/mimac
+    thirdparty/wireless/miwi/source/mimac/phy
+    thirdparty/wireless/miwi/source/miwi_p2p_star
+    thirdparty/wireless/miwi/source/sys
+    thirdparty/wireless/services/common_hw_timer
+    thirdparty/wireless/services/common_hw_timer/sam0
+    thirdparty/wireless/services/nvm
+    thirdparty/wireless/services/sal/inc
+    thirdparty/wireless/services/trx_access
+)
+
+target_link_directories(${PROJECT_NAME}.elf
+                        PUBLIC
+                          thirdparty/wireless/services/common_hw_timer/sam0/lib 
+                          thirdparty/CMSIS/Lib/GCC
+)
+
+target_link_libraries( ASF PUBLIC
+                          sam0_lib_hw_timer
+                          arm_cortexM0l_math
+                          m
+)
