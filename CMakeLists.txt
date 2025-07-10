@@ -24,22 +24,19 @@ set(ASM_SOURCES) # Add any .s or .S files if needed
 
 # compile definitions that need to be accessable project wide
 add_compile_definitions(
-  NDEBUG
-  RTC_COUNT_ASYNC=true
-  ARM_MATH_CM0PLUS=true
-  PDS_ENABLE_WEAR_LEVELING
-  SYSTICK_MODE
-  __ATSAMR3018A__
-  SAL_TYPE=AT86RF2xx
-  TC_ASYNC=true
-  EXTINT_CALLBACK_MODE=true
+  DEBUG
   BOARD=USER_BOARD
+  ARM_MATH_CM0PLUS=true
+  EXTINT_CALLBACK_MODE=true
   USART_CALLBACK_MODE=true
+  SYSTICK_MODE
   SPI_CALLBACK_MODE=true
-  PHY_AT86RF212B
+  TC_ASYNC=true
   PROTOCOL_P2P
-  ENABLE_NETWORK_FREEZER
+  PHY_AT86RF212B
+  SAL_TYPE=AT86RF2xx
   ADC_CALLBACK_MODE
+  __SAMR30G18A__
 )
 
 # Add executable target using custom TARGET name

@@ -124,7 +124,7 @@ void NetworkInit(bool freezer_enable, bool networkRole)
 	 DEBUG_OUTPUT(printf("set connection mode\r\n"));
 	 MiApp_ConnectionMode(ENABLE_ALL_CONN);
 	 
-	role = networkRole;//true = PAN coordinator, false = end device
+	bool role = networkRole;//true = PAN coordinator, false = end device
 //	 nvmPutMyRole(&role);  // Saving the Role of the device
 	if(role==true)
 	{

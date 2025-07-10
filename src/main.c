@@ -27,7 +27,7 @@
 /*
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
-#include <asf.h>
+#include "asf.h"
 #include "custom_board.h"
 #include "debug_interface.h"
 #include "rf_transceiver.h"

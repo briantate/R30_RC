@@ -5,7 +5,7 @@ add_subdirectory(sal)
 add_subdirectory(trx_access)
 
 target_include_directories( ${TARGET}
-    PUBLIC
+    PRIVATE
         common_hw_timer
         nvm
         trx_access

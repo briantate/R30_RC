@@ -9,6 +9,8 @@
         "main.h": "c",
         "asf.h": "c",
         "board.h": "c",
-        "sercom_interrupt.h": "c"
+        "sercom_interrupt.h": "c",
+        "locale": "c",
+        "samr30g18a.h": "c"
     }
 }

@@ -17,10 +17,10 @@
 #define SEND_BUFFER_SIZE  6
 #define RECEIVE_BUFFER_SIZE 6
 
-static bool switchLastState = false;
-static bool switchState = false;
+// static bool switchLastState = false;
+// static bool switchState = false;
 static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
-static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
+// static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 uint8_t msghandledemo = 0;
 uint8_t extintCount = 0;
 uint32_t timeoutCount = 0; //timeout variable
@@ -53,9 +53,9 @@ volatile joystickPtr rightJoystick;
 static void configure_extint_channel(void);
 static void dataConfcb(uint8_t handle, miwi_status_t status, uint8_t* msgPointer);
 static void extint_callback(void);
-static void main_clock_select_osc16m(void);
-static void main_clock_select_dfll(void);
-static void main_clock_select(const enum system_clock_source clock_source);
+// static void main_clock_select_osc16m(void);
+// static void main_clock_select_dfll(void);
+// static void main_clock_select(const enum system_clock_source clock_source);
 
 APP_STATE_T appState = DISCONNECTED;
 
@@ -152,7 +152,7 @@ void AppTask(void)
 
 			txComplete = false;
 			bool res = MiApp_SendData(SHORT_ADDR_LEN, (uint8_t *)&broadcastAddress,
-				SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, dataConfcb);
+				SEND_BUFFER_SIZE, sendDataBuffer, msghandledemo++, true, false, dataConfcb);
 			if(!res)
 			{
 				printf("send fail\r\n");
@@ -248,94 +248,94 @@ static void configure_extint_channel(void)
 	}
 }
 
-/**
- * \brief Select OSC16M as main clock source.
- */
-static void main_clock_select_osc16m(void)
-{
-	struct system_gclk_gen_config gclk_conf;
-	struct system_clock_source_osc16m_config osc16m_conf;
+// /**
+//  * \brief Select OSC16M as main clock source.
+//  */
+// static void main_clock_select_osc16m(void)
+// {
+// 	struct system_gclk_gen_config gclk_conf;
+// 	struct system_clock_source_osc16m_config osc16m_conf;
 
-	/* Switch to new frequency selection and enable OSC16M */
-	system_clock_source_osc16m_get_config_defaults(&osc16m_conf);
-	osc16m_conf.fsel = CONF_CLOCK_OSC16M_FREQ_SEL;
-	osc16m_conf.on_demand = 0;
-	osc16m_conf.run_in_standby = CONF_CLOCK_OSC16M_RUN_IN_STANDBY;
-	system_clock_source_osc16m_set_config(&osc16m_conf);
-	system_clock_source_enable(SYSTEM_CLOCK_SOURCE_OSC16M);
-	while(!system_clock_source_is_ready(SYSTEM_CLOCK_SOURCE_OSC16M));
+// 	/* Switch to new frequency selection and enable OSC16M */
+// 	system_clock_source_osc16m_get_config_defaults(&osc16m_conf);
+// 	osc16m_conf.fsel = CONF_CLOCK_OSC16M_FREQ_SEL;
+// 	osc16m_conf.on_demand = 0;
+// 	osc16m_conf.run_in_standby = CONF_CLOCK_OSC16M_RUN_IN_STANDBY;
+// 	system_clock_source_osc16m_set_config(&osc16m_conf);
+// 	system_clock_source_enable(SYSTEM_CLOCK_SOURCE_OSC16M);
+// 	while(!system_clock_source_is_ready(SYSTEM_CLOCK_SOURCE_OSC16M));
 
-	/* Select OSC16M as mainclock */
-	system_gclk_gen_get_config_defaults(&gclk_conf);
-	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_OSC16M;
-	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
-	if (CONF_CLOCK_OSC16M_ON_DEMAND) {
-		OSCCTRL->OSC16MCTRL.reg |= OSCCTRL_OSC16MCTRL_ONDEMAND;
-	}
+// 	/* Select OSC16M as mainclock */
+// 	system_gclk_gen_get_config_defaults(&gclk_conf);
+// 	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_OSC16M;
+// 	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
+// 	if (CONF_CLOCK_OSC16M_ON_DEMAND) {
+// 		OSCCTRL->OSC16MCTRL.reg |= OSCCTRL_OSC16MCTRL_ONDEMAND;
+// 	}
 
-}
+// }
 
-/**
- * \brief Setect DFLL as main clock source.
- */
-static void main_clock_select_dfll(void)
-{
-	struct system_gclk_gen_config gclk_conf;
+// /**
+//  * \brief Setect DFLL as main clock source.
+//  */
+// static void main_clock_select_dfll(void)
+// {
+// 	struct system_gclk_gen_config gclk_conf;
 
-	/* Select OSCULP32K as new clock source for mainclock temporarily */
-	system_gclk_gen_get_config_defaults(&gclk_conf);
-	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_XOSC32K;
-	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
+// 	/* Select OSCULP32K as new clock source for mainclock temporarily */
+// 	system_gclk_gen_get_config_defaults(&gclk_conf);
+// 	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_XOSC32K;
+// 	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
 
-	/* Select XOSC32K for GCLK1. */
-	system_gclk_gen_get_config_defaults(&gclk_conf);
-	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_XOSC32K;
-	gclk_conf.division_factor = CONF_CLOCK_GCLK_1_PRESCALER;
-	system_gclk_gen_set_config(GCLK_GENERATOR_1, &gclk_conf);
-	system_gclk_gen_enable(GCLK_GENERATOR_1);
+// 	/* Select XOSC32K for GCLK1. */
+// 	system_gclk_gen_get_config_defaults(&gclk_conf);
+// 	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_XOSC32K;
+// 	gclk_conf.division_factor = CONF_CLOCK_GCLK_1_PRESCALER;
+// 	system_gclk_gen_set_config(GCLK_GENERATOR_1, &gclk_conf);
+// 	system_gclk_gen_enable(GCLK_GENERATOR_1);
 
-	struct system_gclk_chan_config dfll_gclk_chan_conf;
+// 	struct system_gclk_chan_config dfll_gclk_chan_conf;
 
-	system_gclk_chan_get_config_defaults(&dfll_gclk_chan_conf);
-	dfll_gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
-	system_gclk_chan_set_config(OSCCTRL_GCLK_ID_DFLL48, &dfll_gclk_chan_conf);
-	system_gclk_chan_enable(OSCCTRL_GCLK_ID_DFLL48);
+// 	system_gclk_chan_get_config_defaults(&dfll_gclk_chan_conf);
+// 	dfll_gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
+// 	system_gclk_chan_set_config(OSCCTRL_GCLK_ID_DFLL48, &dfll_gclk_chan_conf);
+// 	system_gclk_chan_enable(OSCCTRL_GCLK_ID_DFLL48);
 	
-	struct system_clock_source_dfll_config dfll_conf;
-	system_clock_source_dfll_get_config_defaults(&dfll_conf);
+// 	struct system_clock_source_dfll_config dfll_conf;
+// 	system_clock_source_dfll_get_config_defaults(&dfll_conf);
 
-	dfll_conf.loop_mode      = SYSTEM_CLOCK_DFLL_LOOP_MODE_CLOSED;
-	dfll_conf.on_demand      = false;
-	dfll_conf.run_in_stanby  = CONF_CLOCK_DFLL_RUN_IN_STANDBY;
-	dfll_conf.multiply_factor = CONF_CLOCK_DFLL_MULTIPLY_FACTOR;
-	system_clock_source_dfll_set_config(&dfll_conf);
-	system_clock_source_enable(SYSTEM_CLOCK_SOURCE_DFLL);
-	while(!system_clock_source_is_ready(SYSTEM_CLOCK_SOURCE_DFLL));
-	if (CONF_CLOCK_DFLL_ON_DEMAND) {
-		OSCCTRL->DFLLCTRL.bit.ONDEMAND = 1;
-	}
+// 	dfll_conf.loop_mode      = SYSTEM_CLOCK_DFLL_LOOP_MODE_CLOSED;
+// 	dfll_conf.on_demand      = false;
+// 	dfll_conf.run_in_stanby  = CONF_CLOCK_DFLL_RUN_IN_STANDBY;
+// 	dfll_conf.multiply_factor = CONF_CLOCK_DFLL_MULTIPLY_FACTOR;
+// 	system_clock_source_dfll_set_config(&dfll_conf);
+// 	system_clock_source_enable(SYSTEM_CLOCK_SOURCE_DFLL);
+// 	while(!system_clock_source_is_ready(SYSTEM_CLOCK_SOURCE_DFLL));
+// 	if (CONF_CLOCK_DFLL_ON_DEMAND) {
+// 		OSCCTRL->DFLLCTRL.bit.ONDEMAND = 1;
+// 	}
 
-	/* Select DFLL for mainclock. */
-	system_gclk_gen_get_config_defaults(&gclk_conf);
-	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_DFLL;
-	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
+// 	/* Select DFLL for mainclock. */
+// 	system_gclk_gen_get_config_defaults(&gclk_conf);
+// 	gclk_conf.source_clock = SYSTEM_CLOCK_SOURCE_DFLL;
+// 	system_gclk_gen_set_config(GCLK_GENERATOR_0, &gclk_conf);
 
-}
+// }
 
-/**
- * \brief Main clock source selection between DFLL and OSC16M.
- */
-static void main_clock_select(const enum system_clock_source clock_source)
-{
-	if (clock_source == SYSTEM_CLOCK_SOURCE_DFLL) {
-		main_clock_select_dfll();
-		system_clock_source_disable(SYSTEM_CLOCK_SOURCE_OSC16M);
-	} else if (clock_source == SYSTEM_CLOCK_SOURCE_OSC16M) {
-		main_clock_select_osc16m();
-		system_clock_source_disable(SYSTEM_CLOCK_SOURCE_DFLL);
-		system_gclk_chan_disable(OSCCTRL_GCLK_ID_DFLL48);
-		system_gclk_gen_disable(GCLK_GENERATOR_1);
-	} else {
-		return ;
-	}
-}
+// /**
+//  * \brief Main clock source selection between DFLL and OSC16M.
+//  */
+// static void main_clock_select(const enum system_clock_source clock_source)
+// {
+// 	if (clock_source == SYSTEM_CLOCK_SOURCE_DFLL) {
+// 		main_clock_select_dfll();
+// 		system_clock_source_disable(SYSTEM_CLOCK_SOURCE_OSC16M);
+// 	} else if (clock_source == SYSTEM_CLOCK_SOURCE_OSC16M) {
+// 		main_clock_select_osc16m();
+// 		system_clock_source_disable(SYSTEM_CLOCK_SOURCE_DFLL);
+// 		system_gclk_chan_disable(OSCCTRL_GCLK_ID_DFLL48);
+// 		system_gclk_gen_disable(GCLK_GENERATOR_1);
+// 	} else {
+// 		return ;
+// 	}
+// }

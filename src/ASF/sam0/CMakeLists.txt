@@ -3,7 +3,7 @@ add_subdirectory(drivers)
 add_subdirectory(utils)
 
 target_include_directories( ${TARGET}
-    PUBLIC
+    PRIVATE
         drivers
         utils
 )
