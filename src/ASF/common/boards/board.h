@@ -387,7 +387,7 @@ extern "C" {
 #  include "wlr089_xplained_pro/wlr089_xplained_pro.h"
 #elif BOARD == USER_BOARD
 // User-reserved area: #include the header file of your board here (if any).
-#  include "indoor_display_board.h"
+#  include "user_board.h"
 #elif BOARD == DUMMY_BOARD
 #  include "dummy/dummy_board.h"
 #elif BOARD == SAMB11ZR_SENSOR_TAG
