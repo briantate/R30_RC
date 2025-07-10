@@ -4,7 +4,7 @@
         {
             "label": "Flash",
             "type": "shell",
-            "command": "openocd -f ${workspaceFolder}/utils/samr30_board.cfg -c \"transport select swd\" -c \"program build/release/bin/rc.elf verify\" -c \"reset halt\" -c shutdown",
+            "command": "openocd -f ${workspaceFolder}/utils/samr30_board.cfg -c \"transport select swd\" -c \"program build/release/bin/rc.elf verify\" -c \"reset\" -c shutdown",
             // "command": "openocd -f ${workspaceFolder}/utils/clear_bootprot_and_flash.cfg",
 
             "windows": {

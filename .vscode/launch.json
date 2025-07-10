@@ -4,7 +4,7 @@
         {
             "name": "Debug Launch (OpenOCD)",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/debug/bin/car.elf",
+            "executable": "${workspaceFolder}/build/debug/bin/rc.elf",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
@@ -31,7 +31,7 @@
         {
             "name": "Debug Attach (OpenOCD)",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/debug/bin/car.elf",
+            "executable": "${workspaceFolder}/build/debug/bin/rc.elf",
             "type": "cortex-debug",
             "request": "attach",
             "servertype": "openocd",

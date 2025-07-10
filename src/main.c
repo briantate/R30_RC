@@ -39,6 +39,8 @@ void ReadMacAddress(void);
 
 static volatile bool netRole;
 
+volatile uint32_t counter = 0;
+
 int main (void)
 {
 	system_init();
@@ -66,6 +68,13 @@ int main (void)
 	
 	while(1)
 	{
+
+		// poor man's non-blocking delay to blink a system LED
+		if(counter++ >= 100)
+		{
+			counter = 0;
+			port_pin_toggle_output_level(LED1);
+		}
 		AppTask();
 		NetworkTasks();
 	}
