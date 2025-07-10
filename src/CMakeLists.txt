@@ -1,7 +1,6 @@
 # src/
 add_subdirectory(ASF)
 # add_subdirectory(config)
-add_subdirectory(wireless)
 
 target_include_directories( ${TARGET}
     PRIVATE
@@ -10,12 +9,12 @@ target_include_directories( ${TARGET}
 
 target_sources( ${TARGET}
     PRIVATE
+        main.c
         analog.c
         app.c
         custom_board.c
         debug_interface.c
         joystick.c
-        main.c
         network_management.c
         rf_transceiver.c
 )

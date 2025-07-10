@@ -32,7 +32,7 @@
 
 /* === INCLUDES ============================================================ */
 
-#include "asf.h"
+#include <asf.h>
 #include "sio2host.h"
 #include "conf_sio2host.h"
 

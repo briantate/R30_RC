@@ -2,7 +2,7 @@
 add_subdirectory(drivers)
 add_subdirectory(utils)
 
-target_include_directories( ${PROJECT_NAME}.elf
+target_include_directories( ${TARGET}
     PUBLIC
         drivers
         utils

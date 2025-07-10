@@ -1,6 +1,6 @@
 # src/ASF/thirdparty/wireless/miwi/source/sys
 
-target_sources( ${PROJECT_NAME}.elf
+target_sources( ${TARGET}
     PRIVATE
         mimem.c
         miqueue.c

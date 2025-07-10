@@ -1,7 +1,7 @@
-# src/ASF/common2/services/delay
+# src/ASF/thirdparty/wireless/services/common_hw_timer
 add_subdirectory(sam0)
 
 target_include_directories( ${TARGET}
-    PRIVATE
+    PUBLIC
         sam0
 )

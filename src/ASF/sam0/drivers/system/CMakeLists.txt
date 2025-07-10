@@ -1,18 +1,18 @@
 # src/ASF/sam0/drivers/system
-add_subdirectory(clock/clock_samr30)
+add_subdirectory(clock)
 add_subdirectory(interrupt)
 add_subdirectory(pinmux)
 
-target_sources( ${PROJECT_NAME}.elf
+target_sources( ${TARGET}
     PUBLIC
         system.c
 )
 
-target_include_directories( ${PROJECT_NAME}.elf
+target_include_directories( ${TARGET}
     PUBLIC
         clock
         interrupt
         pinmux
-        power
-        reset
+        power/power_sam_l
+        reset/reset_sam_l
 )

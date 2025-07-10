@@ -1,6 +1,6 @@
 # src/ASF/sam0/drivers/port
 
-target_sources( ${PROJECT_NAME}.elf
+target_sources( ${TARGET}
     PRIVATE
         port.c
 )

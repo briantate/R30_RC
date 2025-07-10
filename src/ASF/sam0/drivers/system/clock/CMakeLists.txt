@@ -1,7 +1,7 @@
 # src/ASF/sam0/drivers/system/clock
 add_subdirectory(clock_samr30)
 
-target_include_directories( ${PROJECT_NAME}.elf
-    PRIVATE
+target_include_directories( ${TARGET}
+    PUBLIC
         clock_samr30
 )
