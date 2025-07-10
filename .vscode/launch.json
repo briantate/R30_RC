@@ -9,9 +9,9 @@
             "request": "launch",
             "servertype": "openocd",
             "interface": "swd",
-            "device": "ATSAMC21J18A",
+            "device": "ATSAMR30G18A",
             "runToEntryPoint": "main",
-            "svdFile": "${workspaceFolder}/utils/ATSAMC21J18A.svd",
+            "svdFile": "${workspaceFolder}/utils/ATSAMR30G18A.svd",
             "configFiles": [
                 "interface/cmsis-dap.cfg",
                 "target/at91samdXX.cfg"
@@ -36,8 +36,8 @@
             "request": "attach",
             "servertype": "openocd",
             "interface": "swd",
-            "device": "ATSAMC21J18A",
-            "svdFile": "${workspaceFolder}/utils/ATSAMC21J18A.svd",
+            "device": "ATSAMR30G18A",
+            "svdFile": "${workspaceFolder}/utils/ATSAMR30G18A.svd",
             "configFiles": [
                 "interface/cmsis-dap.cfg",
                 "target/at91samdXX.cfg",

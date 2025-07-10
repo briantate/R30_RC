@@ -6,6 +6,9 @@
         "conf_trx_access.h": "c",
         "hbridge.h": "c",
         "userio.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "asf.h": "c",
+        "board.h": "c",
+        "sercom_interrupt.h": "c"
     }
 }

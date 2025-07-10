@@ -10,7 +10,7 @@
 #define DEBUG_INTERFACE_H_
 
 #include "conf_board.h"
-#include "asf.h"
+#include <asf.h>
 
 #define DEBUG_UART_MODULE       SERCOM0
 #define DEBUG_UART_MUX_SETTING  USART_RX_1_TX_0_XCK_1
