@@ -59,6 +59,15 @@ dkms.conf
 **/build/
 **/debug/
 
+# Mac specific
+**/.DS_Store 
+
+# test folders
+tests/coverage
+tests/obj
+tests/lib
+
+
 #backup files
 *.bkp
 
