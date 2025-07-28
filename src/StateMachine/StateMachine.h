@@ -8,6 +8,8 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
+#include <stdbool.h>
+
 #include "Event.h" // Include generic event definitions
 #include "State.h" // Include state structure and handler types
 
@@ -28,9 +30,9 @@ extern "C" {
  */
 typedef struct FSM_t
 {
-    int currentState;          ///< The current state ID of the state machine (generic integer)
-    const State_t *stateTable; ///< Pointer to the array of State_t definitions (the state table)
-    int numStates;             ///< Total number of states in the provided state table
+    uint8_t currentState;
+    const State_t *stateTable; // Pointer to the array of State_t definitions (the state table)
+    uint8_t numStates;
     // Add any other state machine specific context data here, e.g., timers, flags, etc.
 } FSM_t; // Renamed from StateMachine_t to FSM_t
 
@@ -42,8 +44,9 @@ typedef struct FSM_t
  * @param initialState The initial state ID for the state machine.
  * @param stateTable A pointer to the array of State_t definitions (the state table).
  * @param numStates The total number of entries in the stateTable.
+ * @return true if initialization was successful, false otherwise (e.g., NULL pointers).
  */
-void FSM_Init(FSM_t *fsm, int initialState, const State_t *stateTable, int numStates);
+bool FSM_Init(FSM_t *fsm, uint8_t initialState, const State_t *stateTable, uint8_t numStates);
 
 /**
  * @brief Handles an event for the state machine.
@@ -53,8 +56,9 @@ void FSM_Init(FSM_t *fsm, int initialState, const State_t *stateTable, int numSt
  *
  * @param fsm A pointer to the FSM_t instance.
  * @param event The event to be handled.
+ * @return true if the event was successfully dispatched to a handler, false on critical error.
  */
-void FSM_HandleEvent(FSM_t *fsm, event_t event);
+bool FSM_HandleEvent(FSM_t *fsm, event_t event);
 
 #ifdef __cplusplus
 }
