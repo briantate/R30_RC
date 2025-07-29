@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     clang-tidy \
     clang-format \
+    cppcheck \
     pmccabe \
     python3 \
     python3-setuptools \

@@ -64,9 +64,9 @@ mccabe_analysis:
 clang_format:
 	@clang-format --style=Google -i ${APP_SOURCES}
 
-# .PHONY: cppcheck
-# cppcheck:
-#     cppcheck --enable=all --inconclusive --std=c++17 ${APP_SOURCES}
+.PHONY: cppcheck
+cppcheck:
+	@cppcheck --enable=all --inconclusive --std=c++17 ${APP_SOURCES}
 
 .PHONY: docker_image
 docker_image:
