@@ -5,10 +5,11 @@
  *  Author: C41175
  */ 
 
-#include <asf.h>
+#include "asf.h"
 #include "app.h"
 #include "debug_interface.h"
 #include "miwi_api.h"
+#include "network_management.h"
 #include "conf_clocks.h" //needed for sleep mode operation
 #include "custom_board.h"
 #include "analog.h"
@@ -31,10 +32,13 @@ static bool connected = true;
 
 typedef enum
 {
+	INIT,
 	DISCONNECTED,
 	WAIT,
 	SAMPLE,
-	SEND
+	SEND,
+	ERROR,
+	NUM_STATES
 }APP_STATE_T;
 
 #define L_XDIR_POS 0
@@ -57,7 +61,7 @@ static void extint_callback(void);
 // static void main_clock_select_dfll(void);
 // static void main_clock_select(const enum system_clock_source clock_source);
 
-APP_STATE_T appState = DISCONNECTED;
+APP_STATE_T appState = INIT;
 
 void AppInit(void)
 {
@@ -100,6 +104,16 @@ void AppTask(void)
 	//remote control state machine:
 	switch(appState)
 	{
+		case INIT:
+		{
+			if (true == NetworkInit(NETWORK_FREEZER_OFF, NETWORK_ROLE))
+			{
+				appState = DISCONNECTED;
+			}
+			else{
+				appState = ERROR;
+			}
+		}
 		case DISCONNECTED:
 		{
 			//blink red LED every 500ms
@@ -171,6 +185,10 @@ void AppTask(void)
 			timeoutCount = 0;
 			appState = WAIT;
 			break;
+		}
+		case ERROR:
+		{
+			//ToDo: wait and then retry connection?
 		}
 	}
 }

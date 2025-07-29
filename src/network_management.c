@@ -17,6 +17,42 @@ uint8_t AdditionalNodeID[ADDITIONAL_NODE_ID_SIZE] = {0x1}; //ToDo: what is this?
 
 uint8_t myChannel = 8;
 
+
+//forward declarations
+static void Connection_Confirm(miwi_status_t status);
+
+
+// helper functions
+static bool NetworkConnect(void)
+{
+	bool ret = false;
+	//	 nvmPutMyRole(&role);  // Saving the Role of the device
+	if(NETWORK_ROLE==PAN_COORDINATOR)
+	{
+		DEBUG_OUTPUT(printf("Role = PAN Coordinator\r\n"));
+		DEBUG_OUTPUT(printf("start PAN\r\n"));
+		ret = MiApp_StartConnection(START_CONN_DIRECT, 10, (1L << myChannel), Connection_Confirm);
+	}
+	else
+	{
+		DEBUG_OUTPUT(printf("Role = Edge Node\r\n"));
+		DEBUG_OUTPUT(printf("Connect to PAN\r\n"));
+		uint8_t PeerIndex = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
+		if(PeerIndex == 0xFF)
+		{
+			DEBUG_OUTPUT(printf("Connection not established\r\n"));
+			ret = false;
+		}
+		else
+		{
+			DEBUG_OUTPUT(printf("Connected to peer %u\r\n", PeerIndex));
+			ret = true;
+		}
+	}
+
+	return ret;
+}
+
 static void Connection_Confirm(miwi_status_t status)
 {
 	printf("\r\nConnect Operation Status: ");
@@ -30,6 +66,8 @@ static void Connection_Confirm(miwi_status_t status)
 		case FAILURE:
 		{
 			DEBUG_OUTPUT(printf("FAILURE\r\n"));
+			DEBUG_OUTPUT(printf("retrying connection\r\n"));
+			NetworkConnect();
 			break;
 		}
 		case CHANNEL_ACCESS_FAILURE:
@@ -100,9 +138,9 @@ static void Connection_Confirm(miwi_status_t status)
 	}
 }
 
-void NetworkInit(bool freezer_enable, bool networkRole)
+bool NetworkInit(bool freezer_enable, bool networkRole)
 {
-	
+	bool ret = false;
 	if(MiApp_SubscribeDataIndicationCallback(ReceivedDataIndication))
 	{
 		DEBUG_OUTPUT(printf("MiWi receive callback registered\r\n"));
@@ -110,46 +148,37 @@ void NetworkInit(bool freezer_enable, bool networkRole)
 	else
 	{
 		DEBUG_OUTPUT(printf("error: MiWi receive callback not registered\r\n"));
+		return ret;
 	}
 	
 	DEBUG_OUTPUT(printf("network init\r\n"));
-	MiApp_ProtocolInit(NULL, NULL); //initializes MiApp, MAC, PHY, & radio i/f 
+
+	miwi_status_t status = MiApp_ProtocolInit(NULL, NULL);
+	if( status != SUCCESS) //initializes MiApp, MAC, PHY, & radio i/f 
+	{
+		DEBUG_OUTPUT(printf("Error initializing Miwi: %d\r\n", status ));
+		return ret;
+	}
 	
-	 DEBUG_OUTPUT(printf("set default channel\r\n"));
+	 DEBUG_OUTPUT(printf("set default channel: %d\r\n", myChannel));
 	 if( MiApp_Set(CHANNEL, &myChannel) == false )
 	 {
 		 DEBUG_OUTPUT(printf("channel %d not supported\r\n", myChannel));
+		 return ret;
 	 }
 	 
 	 DEBUG_OUTPUT(printf("set connection mode\r\n"));
 	 MiApp_ConnectionMode(ENABLE_ALL_CONN);
 	 
-	bool role = networkRole;//true = PAN coordinator, false = end device
-//	 nvmPutMyRole(&role);  // Saving the Role of the device
-	if(role==true)
-	{
-		DEBUG_OUTPUT(printf("Role = PAN Coordinator\r\n"));
-		DEBUG_OUTPUT(printf("start PAN\r\n"));
-		MiApp_StartConnection(START_CONN_DIRECT, 10, (1L << myChannel), Connection_Confirm);
-	}
-	else
-	{
-		DEBUG_OUTPUT(printf("Role = Edge Node\r\n"));
-		DEBUG_OUTPUT(printf("Connect to PAN\r\n"));
-		uint8_t PeerIndex = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
-		if(PeerIndex == 0xFF)
-		{
-			DEBUG_OUTPUT(printf("Connection not established\r\n"));
-		}
-		else
-		{
-			DEBUG_OUTPUT(printf("Connected to peer %u\r\n", PeerIndex));
-		}
-	}
-	 
+
+	ret = NetworkConnect();
+
+	return ret; 
 }
 
 void NetworkTasks(void)
 {
 	P2PTasks(); //maintain the operation of the stack - call often
 }
+
+

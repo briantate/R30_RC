@@ -37,8 +37,6 @@
 
 void ReadMacAddress(void);
 
-static volatile bool netRole;
-
 volatile uint32_t counter = 0;
 
 int main (void)
@@ -51,10 +49,7 @@ int main (void)
 	AppInit();
 
 	TransceiverConfig(); //initialize pins to the radio
-	
-	//check switch state at startup to determine network role
-	netRole = 0;//port_pin_get_input_level(SW0_PIN);   
-	DEBUG_OUTPUT(port_pin_set_output_level(LED0, !netRole)); //LED on if PAN coordinator
+
 	ReadMacAddress();
 	DEBUG_OUTPUT(printf("address: "));
 	for(uint8_t i=0; i<MY_ADDRESS_LENGTH; i++)
@@ -63,8 +58,6 @@ int main (void)
 	}
 
 	DEBUG_OUTPUT(printf("\r\n"));
-	
-	NetworkInit(NETWORK_FREEZER_OFF, netRole);
 	
 	while(1)
 	{
@@ -103,7 +96,7 @@ void ReadMacAddress(void)
    {
 	   myLongAddress[i] = i+1;
    }
-   if(netRole)
+   if(NETWORK_ROLE)
    {
 	   myLongAddress[0] += 1;
    }

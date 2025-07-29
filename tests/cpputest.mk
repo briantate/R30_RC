@@ -23,7 +23,7 @@ PROJECT_HOME_DIR = /home/app
 # production code C and CPP files.
 #
 SRC_FILES := $(shell find tests -type f -name '*.c')
-SRC_FILES += src/network/network_fsm.c
+SRC_FILES += src/StateMachine/StateMachine.c
 # SRC_DIRS += 
 
 # --- TEST_SRC_FILES and TEST_SRC_DIRS ---
@@ -37,6 +37,7 @@ SRC_FILES += src/network/network_fsm.c
 
 # TEST_SRC_FILES +=
 TEST_SRC_DIRS += tests
+TEST_SRC_DIRS += tests/StateMachine
 
 # --- MOCKS_SRC_DIRS ---
 # MOCKS_SRC_DIRS specifies a directories where you can put your
@@ -70,6 +71,7 @@ CPPUTEST_USE_GCOV = Y
 #INCLUDE_DIRS += firmware/stm32/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 INCLUDE_DIRS += src
 INCLUDE_DIRS += src/network
+INCLUDE_DIRS += src/StateMachine
 INCLUDE_DIRS += $(CPPUTEST_HOME)/include
 INCLUDE_DIRS += $(CPPUTEST_HOME)/include/Platforms/Gcc
 

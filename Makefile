@@ -53,6 +53,14 @@ unit_tests:
 mccabe_analysis:
 	@pmccabe -vt $(APP_SOURCES) $(APP_C_SOURCES)
 
+# .PHONY: clang_format
+# clang_format:
+#     clang-format --style=Google -i ${APP_SOURCES}
+
+# .PHONY: cppcheck
+# cppcheck:
+#     cppcheck --enable=all --inconclusive --std=c++17 ${APP_SOURCES}
+
 .PHONY: docker_image
 docker_image:
 	docker build -t dev .

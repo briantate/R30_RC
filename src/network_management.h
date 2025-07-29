@@ -12,9 +12,13 @@
 #define NETWORK_FREEZER_OFF false
 #define NETWORK_FREEZER_ON true
 
-#define NETWORK_ROLE false //true = PAN coordinator, false = edge node
+//true = PAN coordinator, false = edge node
+#define EDGE_NODE false 
+#define PAN_COORDINATOR true
 
-void NetworkInit(bool freezer_enable, bool networkRole);
+#define NETWORK_ROLE EDGE_NODE 
+
+bool NetworkInit(bool freezer_enable, bool networkRole);
 
 void NetworkTasks(void);
 
