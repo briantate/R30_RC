@@ -25,85 +25,76 @@
  * Atmel Software Framework (ASF).
  */
 /*
- * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
+ * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip
+ * Support</a>
  */
+#include "app.h"
 #include "asf.h"
 #include "custom_board.h"
 #include "debug_interface.h"
-#include "rf_transceiver.h"
-#include "network_management.h"
 #include "miwi_api.h"
-#include "app.h"
+#include "network_management.h"
+#include "rf_transceiver.h"
 
 void ReadMacAddress(void);
 
 volatile uint32_t counter = 0;
 
-int main (void)
-{
-	system_init();
-	CustomBoardInit();
-	delay_init(); //used to to initialize radio interface
-	SYS_TimerInit(); //used as a symbol timer by the MiWi stack
-	
-	AppInit();
+int main(void) {
+  system_init();
+  CustomBoardInit();
+  delay_init();     // used to to initialize radio interface
+  SYS_TimerInit();  // used as a symbol timer by the MiWi stack
 
-	TransceiverConfig(); //initialize pins to the radio
+  AppInit();
 
-	ReadMacAddress();
-	DEBUG_OUTPUT(printf("address: "));
-	for(uint8_t i=0; i<MY_ADDRESS_LENGTH; i++)
-	{
-		DEBUG_OUTPUT(printf("%u",myLongAddress[MY_ADDRESS_LENGTH - 1 - i]));
-	}
+  TransceiverConfig();  // initialize pins to the radio
 
-	DEBUG_OUTPUT(printf("\r\n"));
-	
-	while(1)
-	{
+  ReadMacAddress();
+  DEBUG_OUTPUT(printf("address: "));
+  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
+    DEBUG_OUTPUT(printf("%u", myLongAddress[MY_ADDRESS_LENGTH - 1 - i]));
+  }
 
-		// poor man's non-blocking delay to blink a system LED
-		if(counter++ >= 100)
-		{
-			counter = 0;
-			port_pin_toggle_output_level(LED1);
-		}
-		AppTask();
-		NetworkTasks();
-	}
+  DEBUG_OUTPUT(printf("\r\n"));
+
+  while (1) {
+    // poor man's non-blocking delay to blink a system LED
+    if (counter++ >= 100) {
+      counter = 0;
+      port_pin_toggle_output_level(LED1);
+    }
+    AppTask();
+    NetworkTasks();
+  }
 }
-
 
 /*********************************************************************
-* Function:         void ReadMacAddress()
-*
-* PreCondition:     none
-*
-* Input:		    none
-*
-* Output:		    Reads MAC Address from MAC Address EEPROM
-*
-* Side Effects:	    none
-*
-* Overview:		    Uses the MAC Address from the EEPROM for addressing
-*
-* Note:			    
-**********************************************************************/
-void ReadMacAddress(void)
-{ 
-	//placholder function to read MAC address
-   for(uint8_t i=0; i<MY_ADDRESS_LENGTH; i++)
-   {
-	   myLongAddress[i] = i+1;
-   }
-   if(NETWORK_ROLE)
-   {
-	   myLongAddress[0] += 1;
-   }
+ * Function:         void ReadMacAddress()
+ *
+ * PreCondition:     none
+ *
+ * Input:		    none
+ *
+ * Output:		    Reads MAC Address from MAC Address EEPROM
+ *
+ * Side Effects:	    none
+ *
+ * Overview:		    Uses the MAC Address from the EEPROM for addressing
+ *
+ * Note:
+ **********************************************************************/
+void ReadMacAddress(void) {
+  // placholder function to read MAC address
+  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
+    myLongAddress[i] = i + 1;
+  }
+  if (NETWORK_ROLE) {
+    myLongAddress[0] += 1;
+  }
 }
 
-void HardFault_Handler(void)
-{
-	while (1) {
-	}
+void HardFault_Handler(void) {
+  while (1) {
+  }
 }

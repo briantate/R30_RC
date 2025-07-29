@@ -9,6 +9,13 @@ TEST_DIR := tests
 COVERAGE_DIR := $(TEST_DIR)/coverage
 LIB_DIR := $(FIRMWARE_DIR)/lib
 
+APP_DIR := $(FIRMWARE_DIR)
+
+APP_SOURCES := $(wildcard $(APP_DIR)/*.cpp)
+APP_SOURCES += $(wildcard $(APP_DIR)/*.c)
+APP_SOURCES += $(wildcard $(APP_DIR)/StateMachine/*.c)
+APP_SOURCES += $(wildcard $(APP_DIR)/network/*.c)
+
 # List of the test headers and sources. The TEST code should be
 # hardware independent and should be able to be used in the test harness
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.h*)
@@ -53,9 +60,9 @@ unit_tests:
 mccabe_analysis:
 	@pmccabe -vt $(APP_SOURCES) $(APP_C_SOURCES)
 
-# .PHONY: clang_format
-# clang_format:
-#     clang-format --style=Google -i ${APP_SOURCES}
+.PHONY: clang_format
+clang_format:
+	@clang-format --style=Google -i ${APP_SOURCES}
 
 # .PHONY: cppcheck
 # cppcheck:

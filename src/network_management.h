@@ -9,6 +9,8 @@
 #ifndef NETWORK_MANAGEMENT_H_
 #define NETWORK_MANAGEMENT_H_
 
+#include <stdbool.h>
+
 #define NETWORK_FREEZER_OFF false
 #define NETWORK_FREEZER_ON true
 
