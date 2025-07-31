@@ -25,7 +25,7 @@ case "$1" in
         BUILD_TYPE="Simulation"
         TOOLCHAIN_FILE="toolchain-host.cmake" # Use the host toolchain for simulation
         ;;
-    debug|*)
+    debug)
         BUILD_SUB_DIR="debug"
         BUILD_TYPE="Debug"
         TOOLCHAIN_FILE="toolchain-arm.cmake"
@@ -33,6 +33,17 @@ case "$1" in
     mccabe)
         cmake -B build/release
         cmake --build build/release  --target run_pmccabe
+        exit 0
+        ;;
+    clang-tidy)
+        echo "build for clang-tidy checks"
+        BUILD_SUB_DIR="release"
+        BUILD_TYPE="Debug"
+        BUILD_DIR="$BUILD_ROOT_DIR/$BUILD_SUB_DIR"
+        TOOLCHAIN_FILE="toolchain-arm.cmake"
+        cmake -G Ninja -B $BUILD_DIR -S . -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE
+        ninja -C $BUILD_DIR
+        cmake --build $BUILD_DIR --target clang-tidy-check
         exit 0
         ;;
     *)

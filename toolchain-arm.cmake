@@ -15,6 +15,35 @@ set(EXE_DIR "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Fallback output dir")
 # Set the toolchain base path
 set(TOOLCHAIN_BASE_PATH "/home/dev/gcc-arm-none-eabi-10.3-2021.10/bin/")
 
+# --- START ADDED SECTION FOR CLANG-TIDY INFO ---
+
+# Derive key toolchain information for use in other CMakeLists.txt files (e.g., clang-tidy setup)
+
+# ARM_TOOLCHAIN_BASE_DIR: This is the parent directory of 'bin/' (e.g., /home/dev/gcc-arm-none-eabi-10.3-2021.10)
+get_filename_component(ARM_TOOLCHAIN_ROOT_PATH "${TOOLCHAIN_BASE_PATH}" DIRECTORY)
+set(ARM_TOOLCHAIN_BASE_DIR "${ARM_TOOLCHAIN_ROOT_PATH}" CACHE PATH "Base directory of ARM toolchain for clang-tidy")
+
+# ARM_TOOLCHAIN_TRIPLE: The target triple (e.g., arm-none-eabi)
+# For 'arm-none-eabi-gcc', the triple is 'arm-none-eabi'.
+set(ARM_TOOLCHAIN_TRIPLE "arm-none-eabi" CACHE STRING "Target triple for ARM toolchain (e.g., arm-none-eabi)")
+
+# ARM_GCC_VERSION: The specific version string (e.g., 10.3.2021.10)
+# We can extract this from the directory name if it's consistent.
+string(REGEX MATCH "gcc-arm-none-eabi-([0-9]+\\.[0-9]+-[0-9]+\\.[0-9]+)" _match "${ARM_TOOLCHAIN_BASE_DIR}")
+if(_match)
+    set(ARM_GCC_VERSION "${CMAKE_MATCH_1}" CACHE STRING "Version string of GCC compiler in ARM toolchain")
+else()
+    set(ARM_GCC_VERSION "10.3.2021.10" CACHE STRING "Version string of GCC compiler in ARM toolchain" FORCE) # Fallback if regex fails
+    message(WARNING "Could not automatically determine ARM GCC version from path. Using fallback: ${ARM_GCC_VERSION}")
+endif()
+
+message(STATUS "Clang-Tidy Toolchain Info:")
+message(STATUS "  Base Dir: ${ARM_TOOLCHAIN_BASE_DIR}")
+message(STATUS "  Triple:   ${ARM_TOOLCHAIN_TRIPLE}")
+message(STATUS "  GCC Ver:  ${ARM_GCC_VERSION}")
+
+# --- END ADDED SECTION ---
+
 # Specify the cross compiler and associated tools
 set(CMAKE_C_COMPILER "${TOOLCHAIN_BASE_PATH}arm-none-eabi-gcc")
 set(CMAKE_CXX_COMPILER "${TOOLCHAIN_BASE_PATH}arm-none-eabi-g++")
