@@ -1,0 +1,54 @@
+# .clang-tidy
+# Configuration for clang-tidy to follow Google C++ Style Guide conventions.
+# Note: While Google Style is primarily for C++, many principles apply to C.
+# This config enables relevant checks and tries to align where possible.
+# commenting out CPP specific checks to reduce noise for C only projects
+
+Checks:
+  - '-*'
+  - 'google-*'
+  - 'clang-analyzer-*'
+  - 'bugprone-*'
+  - 'cert-*'
+  - 'modernize-*'
+  - 'readability-*'
+  - 'performance-*'
+  - 'misc-*'
+  # - 'cppcoreguidelines-*'
+CheckOptions: # <--- NOTE: I've removed the empty line above this.
+#   # Google-specific checks
+#   google-build-explicit-make-pair: {} # Ensure std::make_pair is used explicitly
+#   google-build-namespaces: {}         # Ensure proper namespace usage
+#   google-build-using-namespace: {}    # Avoid 'using namespace' in headers
+#   google-default-arguments: {}        # Avoid default arguments in virtual methods
+#   google-explicit-constructor: {}     # Enforce explicit constructors for single-argument types
+#   google-global-names-in-headers: {}  # Avoid global names in header files
+#   google-readability-avoid-underscore-in-googletest-name: {} # If you use Google Test (C++ specific)
+#   google-readability-casting: {}      # Prefer C++-style casts (static_cast, reinterpret_cast, const_cast)
+#                                       # For pure C, this might not be as relevant, but still good to know.
+#   google-readability-todo: {}         # Enforce proper TODO comment format
+#   google-runtime-int: {}              # Prefer C++ standard integer types (e.g., int32_t) over long, short, etc.
+#                                       # Very relevant for embedded to use fixed-width types.
+#   google-runtime-operator: {}         # Checks operator overloading for Google style
+#   google-upgrade-googletest-case: {}  # For Google Test
+
+#   # General readability/style checks adjusted for Google
+  readability-identifier-naming.CaseForEnums: PascalCase
+  readability-identifier-naming.CaseForMacro: UPPER_CASE
+  readability-identifier-naming.CaseForStructs: PascalCase
+  readability-identifier-naming.CaseForVariables: camelBack
+  readability-identifier-naming.CaseForFunctions: camelBack
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.ConstantCase: CamelCase
+  readability-identifier-naming.ConstantPrefix: "k"
+  readability-identifier-naming.MemberCase: camelBack
+  readability-identifier-naming.MethodCase: camelBack
+  readability-identifier-naming.NamespaceCase: CamelCase
+
+  # C-specific considerations for Google Style (often implicitly handled by -*, google-*)
+  # cert-err34-c: {} # Warns about unsafe C functions like atoi. Google encourages safer alternatives.
+  # clang-analyzer-*: {} # Essential for finding bugs in C code.
+
+# You can also define which warnings to treat as errors.
+# This is a good practice for continuous integration to ensure high quality.
+# WarningsAsErrors: 'google-*,cert-*,bugprone-*'

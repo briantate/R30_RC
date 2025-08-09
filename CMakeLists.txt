@@ -131,57 +131,13 @@ add_custom_target(cppcheck
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# add_custom_target(clang-tidy-check
-#     COMMENT "Running clang-tidy checks..."
-#     # Run the run-clang-tidy.py script, pointing it to the compilation database.
-#     #    The script will automatically pick up the .clang-tidy configuration file
-#     #    if placed in your project's root directory.
-#     COMMAND ${RUN_CLANG_TIDY_SCRIPT}
-#             -p=${CMAKE_BINARY_DIR} # Specify the path to the compilation database
-#             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} # Run from source dir where .clang-tidy typically resides
-#     USES_TERMINAL # If you want output to be directly visible in the terminal
-# )
-
-# add_custom_target(
-#     clang-tidy-check
-#     COMMENT "Running clang-tidy checks..."
-#     COMMAND ${RUN_CLANG_TIDY_SCRIPT_PATH}
-#             -p=${CMAKE_BINARY_DIR} # Path to compilation database
-#             -- # Pass subsequent args to clang-tidy's compiler front-end
-#             -target=${ARM_TOOLCHAIN_TRIPLE}
-#             --sysroot="${ARM_TOOLCHAIN_BASE_DIR}/${ARM_TOOLCHAIN_TRIPLE}"
-#             # System include paths for the toolchain
-#             -isystem "${ARM_TOOLCHAIN_BASE_DIR}/lib/gcc/${ARM_TOOLCHAIN_TRIPLE}/${ARM_GCC_VERSION}/include"
-#             -isystem "${ARM_TOOLCHAIN_BASE_DIR}/lib/gcc/${ARM_TOOLCHAIN_TRIPLE}/${ARM_GCC_VERSION}/include-fixed"
-#             -isystem "${ARM_TOOLCHAIN_BASE_DIR}/${ARM_TOOLCHAIN_TRIPLE}/include"
-#             # Add any other project-specific include paths that aren't in compile_commands.json but are needed for clang-tidy
-#     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#     USES_TERMINAL
-# )
-# In your main CMakeLists.txt, just before the custom target
-
-# In your main CMakeLists.txt, update the custom target to be more focused.
-
-# Build the clang-tidy command arguments in a variable for clarity and robustness
-set(CLANG_TIDY_COMMAND_ARGS
-    -p=${CMAKE_BINARY_DIR}
-    --
-    -target=${ARM_TOOLCHAIN_TRIPLE}
-    --sysroot="${ARM_TOOLCHAIN_BASE_DIR}/${ARM_TOOLCHAIN_TRIPLE}"
-    -isystem "${ARM_TOOLCHAIN_BASE_DIR}/lib/gcc/${ARM_TOOLCHAIN_TRIPLE}/${ARM_GCC_VERSION}/include"
-    -isystem "${ARM_TOOLCHAIN_BASE_DIR}/lib/gcc/${ARM_TOOLCHAIN_TRIPLE}/${ARM_GCC_VERSION}/include-fixed"
-    -isystem "${ARM_TOOLCHAIN_BASE_DIR}/${ARM_TOOLCHAIN_TRIPLE}/include"
-)
-
 add_custom_target(
     clang-tidy-check
-    COMMENT "Running clang-tidy checks..."
-    # The build and compile_commands.json generation are handled by the shell script.
-    # This command simply runs clang-tidy.
-    COMMAND ${PYTHON3_EXECUTABLE} ${RUN_CLANG_TIDY_SCRIPT_PATH} ${CLANG_TIDY_COMMAND_ARGS}
-
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    USES_TERMINAL
+    COMMAND
+        /bin/bash -c "for file in \$(find \"${CMAKE_SOURCE_DIR}/src\" -type f \\( -name \"*.c\" -o -name \"*.cpp\" -o -name \"*.h\" \\) ); do echo \"Checking \$file\"; clang-tidy -p \"${CMAKE_BINARY_DIR}/release\" \"\$file\" --extra-arg=-I\"${ARM_TOOLCHAIN_INCLUDE_PATH}\"; done"
+    COMMENT
+        "Running clang-tidy on C and C++ files in the 'src' directory (excluding 'src/ASF')"
+    VERBATIM
 )
 
 # Linker options and libraries (from toolchain)

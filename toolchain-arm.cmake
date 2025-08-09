@@ -15,17 +15,15 @@ set(EXE_DIR "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Fallback output dir")
 # Set the toolchain base path
 set(TOOLCHAIN_BASE_PATH "/home/dev/gcc-arm-none-eabi-10.3-2021.10/bin/")
 
-# --- START ADDED SECTION FOR CLANG-TIDY INFO ---
-
-# Derive key toolchain information for use in other CMakeLists.txt files (e.g., clang-tidy setup)
-
 # ARM_TOOLCHAIN_BASE_DIR: This is the parent directory of 'bin/' (e.g., /home/dev/gcc-arm-none-eabi-10.3-2021.10)
 get_filename_component(ARM_TOOLCHAIN_ROOT_PATH "${TOOLCHAIN_BASE_PATH}" DIRECTORY)
 set(ARM_TOOLCHAIN_BASE_DIR "${ARM_TOOLCHAIN_ROOT_PATH}" CACHE PATH "Base directory of ARM toolchain for clang-tidy")
 
-# ARM_TOOLCHAIN_TRIPLE: The target triple (e.g., arm-none-eabi)
-# For 'arm-none-eabi-gcc', the triple is 'arm-none-eabi'.
-set(ARM_TOOLCHAIN_TRIPLE "arm-none-eabi" CACHE STRING "Target triple for ARM toolchain (e.g., arm-none-eabi)")
+# **ADD THIS SECTION**
+# Construct the path to the C standard library headers
+set(ARM_TOOLCHAIN_INCLUDE_PATH "${ARM_TOOLCHAIN_BASE_DIR}/${ARM_TOOLCHAIN_TRIPLE}/include")
+message(STATUS "Toolchain C Include Path: ${ARM_TOOLCHAIN_INCLUDE_PATH}")
+# **END ADD THIS SECTION**
 
 # ARM_GCC_VERSION: The specific version string (e.g., 10.3.2021.10)
 # We can extract this from the directory name if it's consistent.
