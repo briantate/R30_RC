@@ -1,10 +1,11 @@
 // TestNetwork.cpp
-// Tests the generic StateMachine.c module.
-// It uses a minimal, internal state machine definition for testing purposes.
 
 #include "CppUTest/TestHarness.h"
-#include "network"
+
 #include <stdbool.h>        // For bool type
+
+#include "network_interface.h"
+
 
 
 // --- CppUTest Test Group for "Happy Path" StateMachine.c tests ---
@@ -25,10 +26,10 @@ TEST_GROUP(NetworkInterface)
     }
 };
 
-// Test: Verify that the generic state machine initializes to GENERIC_STATE_A
-TEST(NetworkInterface, InitialStateIsGenericStateA)
+TEST(NetworkInterface, InitReturnsSuccessIfAllSubmodulesInitialized)
 {
-    // LONGS_EQUAL(GENERIC_STATE_A, fsm.currentState);
+
+    LONGS_EQUAL(SUCCESS, network_init());
 }
 
 
