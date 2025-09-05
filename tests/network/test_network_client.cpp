@@ -65,9 +65,9 @@ TEST(network_client, EventCallbackIsCalled)
         .context = NULL
     };
 
-    register_device(&dev);
+    network_register_client(&dev);
 
-    network_device_set_event_callback(&dev, test_event_handler, (void*)0x1234);
+    network_client_set_event_callback(&dev, test_event_handler, (void*)0x1234);
 
     static uint8_t fake_data[] = { 0x55 };
     net_event_t e = {
@@ -79,7 +79,7 @@ TEST(network_client, EventCallbackIsCalled)
         }
     };
 
-    network_device_emit_event(&dev, &e);
+    network_client_emit_event(&dev, &e);
 
     CHECK_EQUAL(NWK_EVENT_DATA_RECEIVED, last_event.code);
     CHECK_EQUAL(&dev, last_event.source);
