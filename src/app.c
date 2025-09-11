@@ -2,7 +2,7 @@
  * app.c
  *
  * Created: 10/23/2018 1:57:40 PM
- *  Author: C41175
+ *  Author: Brian Tate
  */
 
 #include "app.h"
@@ -11,10 +11,11 @@
 #include "asf.h"
 #include "conf_clocks.h"  //needed for sleep mode operation
 #include "custom_board.h"
-#include "debug_interface.h"
+#include "debug_interface.h" //for debug logging
 #include "joystick.h"
 #include "miwi_api.h"
 #include "network_management.h"
+#include "rf_transceiver.h"
 
 #define SEND_BUFFER_SIZE 6
 #define RECEIVE_BUFFER_SIZE 6
@@ -53,6 +54,8 @@ typedef enum {
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
 
+static void ReadMacAddress(void);
+
 static void configure_extint_channel(void);
 static void dataConfcb(uint8_t handle, miwi_status_t status,
                        uint8_t* msgPointer);
@@ -64,6 +67,9 @@ static void extint_callback(void);
 APP_STATE_T appState = INIT;
 
 void AppInit(void) {
+  CustomBoardInit();
+  delay_init();     // used to to initialize radio interface
+  SYS_TimerInit();  // used as a symbol timer by the MiWi stack
   configure_console();
 
   printf("R30 Remote Control Project\r\n");
@@ -92,9 +98,28 @@ void AppInit(void) {
       // ToDo: add error handling?
     }
   }
+
+  TransceiverConfig();  // initialize pins to the radio
+
+  ReadMacAddress();
+  DEBUG_OUTPUT(printf("address: "));
+  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
+    DEBUG_OUTPUT(printf("%u", myLongAddress[MY_ADDRESS_LENGTH - 1 - i]));
+  }
+
+  DEBUG_OUTPUT(printf("\r\n"));
 }
 
+volatile uint32_t counter = 0;
+
 void AppTask(void) {
+
+  // poor man's non-blocking delay to blink a system LED
+    if (counter++ >= 100) {
+      counter = 0;
+      port_pin_toggle_output_level(LED1);
+    }
+  
   // remote control state machine:
   switch (appState) {
     case INIT: {
@@ -239,6 +264,31 @@ static void configure_extint_channel(void) {
   extint_chan_enable_callback(SW0_EIC_LINE, EXTINT_CALLBACK_TYPE_DETECT);
   while (extint_chan_is_detected(SW0_EIC_LINE)) {
     extint_chan_clear_detected(SW0_EIC_LINE);
+  }
+}
+
+/*********************************************************************
+ * Function:         void ReadMacAddress()
+ *
+ * PreCondition:     none
+ *
+ * Input:		    none
+ *
+ * Output:		    Reads MAC Address from MAC Address EEPROM
+ *
+ * Side Effects:	    none
+ *
+ * Overview:		    Uses the MAC Address from the EEPROM for addressing
+ *
+ * Note:
+ **********************************************************************/
+void ReadMacAddress(void) {
+  // placholder function to read MAC address
+  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
+    myLongAddress[i] = i + 1;
+  }
+  if (NETWORK_ROLE) {
+    myLongAddress[0] += 1;
   }
 }
 
