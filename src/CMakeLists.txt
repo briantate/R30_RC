@@ -1,11 +1,11 @@
 # src/
 add_subdirectory(ASF)
-# add_subdirectory(network)
+add_subdirectory(network)
 
 target_include_directories( ${TARGET}
     PRIVATE
         config
-        # network
+        network
 )
 
 target_sources( ${TARGET}

@@ -15,7 +15,10 @@
 #include "joystick.h"
 #include "miwi_api.h"
 #include "network_management.h"
-#include "rf_transceiver.h"
+#include "network_interface.h"
+// #include "rf_transceiver.h"
+
+static net_api_t* net = NULL; 
 
 #define SEND_BUFFER_SIZE 6
 #define RECEIVE_BUFFER_SIZE 6
@@ -32,13 +35,13 @@ static bool txComplete = true;
 static bool connected = true;
 
 typedef enum {
-  INIT,
-  DISCONNECTED,
-  WAIT,
-  SAMPLE,
-  SEND,
-  ERROR,
-  NUM_STATES
+  STATE_INIT,
+  STATE_DISCONNECTED,
+  STATE_WAIT,
+  STATE_SAMPLE,
+  STATE_SEND,
+  STATE_ERROR,
+  STATE_NUM_STATES
 } APP_STATE_T;
 
 #define L_XDIR_POS 0
@@ -54,7 +57,7 @@ typedef enum {
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
 
-static void ReadMacAddress(void);
+// static void ReadMacAddress(void);
 
 static void configure_extint_channel(void);
 static void dataConfcb(uint8_t handle, miwi_status_t status,
@@ -64,7 +67,7 @@ static void extint_callback(void);
 // static void main_clock_select_dfll(void);
 // static void main_clock_select(const enum system_clock_source clock_source);
 
-APP_STATE_T appState = INIT;
+APP_STATE_T appState = STATE_INIT;
 
 void AppInit(void) {
   CustomBoardInit();
@@ -98,16 +101,7 @@ void AppInit(void) {
       // ToDo: add error handling?
     }
   }
-
-  TransceiverConfig();  // initialize pins to the radio
-
-  ReadMacAddress();
-  DEBUG_OUTPUT(printf("address: "));
-  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
-    DEBUG_OUTPUT(printf("%u", myLongAddress[MY_ADDRESS_LENGTH - 1 - i]));
-  }
-
-  DEBUG_OUTPUT(printf("\r\n"));
+  net = network_get_interface();
 }
 
 volatile uint32_t counter = 0;
@@ -122,33 +116,35 @@ void AppTask(void) {
   
   // remote control state machine:
   switch (appState) {
-    case INIT: {
-      if (true == NetworkInit(NETWORK_FREEZER_OFF, NETWORK_ROLE)) {
-        appState = DISCONNECTED;
-      } else {
-        appState = ERROR;
-      }
+    case STATE_INIT: {
+      // if (true == NetworkInit(NETWORK_FREEZER_OFF, NETWORK_ROLE)) {
+        appState = STATE_DISCONNECTED;
+        net->up(NULL);
+        // NetworkConnect();
+      // } else {
+      //   appState = ERROR;
+      // }
     }
-    case DISCONNECTED: {
+    case STATE_DISCONNECTED: {
       // blink red LED every 500ms
       // try to connect
       // timeout?
       if (connected) {
-        appState = WAIT;
+        appState = STATE_WAIT;
       }
       break;
     }
-    case WAIT: {
+    case STATE_WAIT: {
       // wait for 15??ms timer //
       //(can we sleep while waiting?)
       //
       if (true)  // placeholder for timer flag
       {
-        appState = SAMPLE;
+        appState = STATE_SAMPLE;
       }
       break;
     }
-    case SAMPLE: {
+    case STATE_SAMPLE: {
       // sample joysticks
       Joystick_Measure(leftJoystick);
       Joystick_Measure(rightJoystick);
@@ -166,10 +162,10 @@ void AppTask(void) {
       // pack button data
       sendDataBuffer[5] = 0x0;  // no button data yet
 
-      appState = SEND;
+      appState = STATE_SEND;
       break;
     }
-    case SEND: {
+    case STATE_SEND: {
       // send TX payload
       //***ToDo: change to unicast
       uint16_t broadcastAddress = 0xFFFF;
@@ -193,10 +189,10 @@ void AppTask(void) {
         timeoutCount++;
       }
       timeoutCount = 0;
-      appState = WAIT;
+      appState = STATE_WAIT;
       break;
     }
-    case ERROR: {
+    case STATE_ERROR: {
       // ToDo: wait and then retry connection?
     }
   }
@@ -267,30 +263,30 @@ static void configure_extint_channel(void) {
   }
 }
 
-/*********************************************************************
- * Function:         void ReadMacAddress()
- *
- * PreCondition:     none
- *
- * Input:		    none
- *
- * Output:		    Reads MAC Address from MAC Address EEPROM
- *
- * Side Effects:	    none
- *
- * Overview:		    Uses the MAC Address from the EEPROM for addressing
- *
- * Note:
- **********************************************************************/
-void ReadMacAddress(void) {
-  // placholder function to read MAC address
-  for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
-    myLongAddress[i] = i + 1;
-  }
-  if (NETWORK_ROLE) {
-    myLongAddress[0] += 1;
-  }
-}
+// /*********************************************************************
+//  * Function:         void ReadMacAddress()
+//  *
+//  * PreCondition:     none
+//  *
+//  * Input:		    none
+//  *
+//  * Output:		    Reads MAC Address from MAC Address EEPROM
+//  *
+//  * Side Effects:	    none
+//  *
+//  * Overview:		    Uses the MAC Address from the EEPROM for addressing
+//  *
+//  * Note:
+//  **********************************************************************/
+// void ReadMacAddress(void) {
+//   // placholder function to read MAC address
+//   for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
+//     myLongAddress[i] = i + 1;
+//   }
+//   if (NETWORK_ROLE) {
+//     myLongAddress[0] += 1;
+//   }
+// }
 
 // /**
 //  * \brief Select OSC16M as main clock source.

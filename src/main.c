@@ -30,16 +30,17 @@
  */
 #include "app.h"
 #include "asf.h"
-#include "network_management.h"
+#include "network_internal.h"
 
 int main(void) {
   system_init();
 
   AppInit();
+  network_init();
 
   while (1) {
     AppTask();
-    NetworkTasks();
+    network_tasks();
   }
 }
 
