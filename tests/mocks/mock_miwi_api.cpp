@@ -45,13 +45,13 @@ miwi_status_t MiApp_ProtocolInit(defaultParametersRomOrRam_t *defaultRomOrRamPar
 // typedef void (*PacketIndCallback_t)(RECEIVED_MESH_MESSAGE *ind);
 // #endif
 
-// bool  MiApp_SubscribeDataIndicationCallback(PacketIndCallback_t callback)
-// {
-//     mock().actualCall("MiApp_SubscribeDataIndicationCallback")
-//               .withParameter("callback", callback);
+bool  MiApp_SubscribeDataIndicationCallback(PacketIndCallback_t callback)
+{
+    mock().actualCall("MiApp_SubscribeDataIndicationCallback")
+              .withParameter("callback", callback);
 
-//         return (bool)mock().boolReturnValue();
-// }
+        return (bool)mock().boolReturnValue();
+}
 
 // uint8_t    MiApp_NoiseDetection(uint32_t ChannelMap, uint8_t ScanDuration, uint8_t DetectionMode, OUTPUT uint8_t *NoiseLevel);
 

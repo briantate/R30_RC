@@ -5,6 +5,7 @@
 #define NETWORK_CLIENT_MIWI_INTERNAL_H
 
 #include "network_client_miwi.h"
+#include "network_client.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,10 +13,21 @@ extern "C" {
 
 // Full definition of the context for use in unit tests
 struct miwi_context_t {
-    bool initialized;
-    int some_internal_state;
-    uint8_t tx_buffer[128];
-    uint8_t rx_buffer[128];
+
+    net_status_t status;
+    uint8_t   channel;
+    uint16_t  pan_id;
+    uint8_t   peer_addr[8];
+    bool      use_broadcast;
+
+    /* Runtime state */
+    volatile bool initialized;
+    volatile bool link_up;
+    int last_rssi;
+    int last_lqi;
+
+    /* Back pointer */
+    net_device_t* dev;
 };
 
 #ifdef __cplusplus

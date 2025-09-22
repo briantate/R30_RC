@@ -20,7 +20,8 @@
 
 #define NETWORK_ROLE EDGE_NODE 
 
-bool NetworkInit(bool freezer_enable, bool networkRole);
+bool NetworkInit(void);
+bool NetworkConnect(void);
 
 void NetworkTasks(void);
 

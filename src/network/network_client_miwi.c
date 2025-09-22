@@ -8,9 +8,23 @@
 #include "network_fsm.h"
 #include <stdint.h>
 
+
+
+static void PacketIndCallback(RECEIVED_MESSAGE *ind){
+
+
+}
+
 net_return_t miwi_init(void* context) {
   net_return_t ret = NWK_FAILURE;
   miwi_context_t* ctx = (miwi_context_t*)context;  
+
+//   if (MiApp_SubscribeDataIndicationCallback(ReceivedDataIndication)) {
+//     DEBUG_OUTPUT(printf("MiWi receive callback registered\r\n"));
+//   } else {
+//     DEBUG_OUTPUT(printf("error: MiWi receive callback not registered\r\n"));
+//     return ret;
+//   }
 
   if(MiApp_ProtocolInit(NULL, NULL) == SUCCESS)
   {

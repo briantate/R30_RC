@@ -16,6 +16,5 @@ target_sources( ${TARGET}
         custom_board.c
         debug_interface.c
         joystick.c
-        network_management.c
         rf_transceiver.c
 )

@@ -101,7 +101,7 @@ extern int _lseek(int file, int ptr, int dir)
 
 extern void _exit(int status)
 {
-	asm("BKPT #0");
+	__asm("BKPT #0");
 	for (;;);
 }
 

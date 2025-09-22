@@ -22,6 +22,12 @@
 #define SW0_EIC_PINMUX            PINMUX_PA28A_EIC_EXTINT8
 #define SW0_EIC_LINE              8
 
+#define ROLE_PIN                   PIN_PB23
+#define ROLE_EDGE                  false
+#define ROLE_COORDINATOR           !ROLE_EDGE
+
+
+
 void CustomBoardInit(void);
 
 

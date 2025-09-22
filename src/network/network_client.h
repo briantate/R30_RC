@@ -56,7 +56,7 @@ typedef struct {
 typedef void (*net_event_callback_t)(const net_event_t* event, void* user_data);
 
 typedef struct{
-    net_return_t (*init)(void* context);
+    net_return_t (*init)(void* context, net_event_callback_t cb);
     net_return_t (*send)(void* context, const uint8_t* data, size_t len);
     net_return_t (*up)(void* context);
     net_return_t (*down)(void* context);

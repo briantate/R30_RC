@@ -23,7 +23,7 @@ uint8_t myChannel = 8;
 static void Connection_Confirm(miwi_status_t status);
 
 // helper functions
-static bool NetworkConnect(void) {
+bool NetworkConnect(void) {
   bool ret = false;
   //	 nvmPutMyRole(&role);  // Saving the Role of the device
   if (NETWORK_ROLE == PAN_COORDINATOR) {
@@ -116,7 +116,7 @@ static void Connection_Confirm(miwi_status_t status) {
   }
 }
 
-bool NetworkInit(bool freezer_enable, bool networkRole) {
+bool NetworkInit(void) {
   bool ret = false;
   if (MiApp_SubscribeDataIndicationCallback(ReceivedDataIndication)) {
     DEBUG_OUTPUT(printf("MiWi receive callback registered\r\n"));
@@ -143,7 +143,8 @@ bool NetworkInit(bool freezer_enable, bool networkRole) {
   DEBUG_OUTPUT(printf("set connection mode\r\n"));
   MiApp_ConnectionMode(ENABLE_ALL_CONN);
 
-  ret = NetworkConnect();
+  // ret = NetworkConnect();
+  ret = true;
 
   return ret;
 }

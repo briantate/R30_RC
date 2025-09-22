@@ -30,6 +30,13 @@ typedef enum {
     NWK_EVENT_CUSTOM
 } net_event_code_t;
 
+#define ACCESS_POINT (true)
+#define CLIENT_NODE (false)
+
+typedef struct{
+    bool role;  //true = access point, false = edge node
+}net_config_t;
+
 typedef struct {
     net_event_code_t code;
     void* source;  // back-pointer to NetworkDevice or context

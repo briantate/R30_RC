@@ -29,14 +29,23 @@ TEST_GROUP(NetworkClientMiwi)
 TEST(NetworkClientMiwi, InitReturnsSuccessIfAllSubmodulesInitialized)
 {
 
-    mock().expectOneCall("MiApp_SubscribeDataIndicationCallback")
-          .andReturnValue(false);
-
     mock().expectOneCall("MiApp_ProtocolInit")
           .withParameter("romParams", (void*)NULL)
           .withParameter("ramParams", (void*)NULL)
           .andReturnValue(SUCCESS);
 
     LONGS_EQUAL(NWK_SUCCESS, miwi_init(&miwi_ctx));
+    CHECK(miwi_ctx.initialized);
+}
+
+TEST(NetworkClientMiwi, InitReturnsFailureIfNotAllSubmodulesInitialized)
+{
+    mock().expectOneCall("MiApp_ProtocolInit")
+          .withParameter("romParams", (void*)NULL)
+          .withParameter("ramParams", (void*)NULL)
+          .andReturnValue(FAILURE);
+
+    LONGS_EQUAL(NWK_FAILURE, miwi_init(&miwi_ctx));
+    CHECK_FALSE(miwi_ctx.initialized);
 }
 
