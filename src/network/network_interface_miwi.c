@@ -56,7 +56,7 @@ typedef struct {
 }packet_meta_t;
 
 //file scope variables
-static uint8_t myChannel = 8;
+static uint8_t myChannel = 3;
 
 net_event_callback_t callback = NULL;
 net_event_t event = {0};
@@ -70,7 +70,7 @@ static packet_meta_t packet_meta = {
 };
 
 //private prototypes
-// static void ReadMacAddress(void);
+static void ReadMacAddress(void);
 static void Connection_Confirm(miwi_status_t status);
 static void dataConfcb(uint8_t handle, miwi_status_t status,
                        uint8_t* msgPointer);
@@ -90,6 +90,8 @@ net_return_t init(void* context){
     TransceiverConfig();  // initialize pins to the radio
 
     DEBUG_OUTPUT(printf("network init\r\n"));
+
+    ReadMacAddress();
 
     miwi_status_t status = MiApp_ProtocolInit(&defaultParamsRomOrRam, &defaultParamsRamOnly);
     if (status != SUCCESS)  // initializes MiApp, MAC, PHY, & radio i/f
@@ -113,7 +115,7 @@ net_return_t init(void* context){
     DEBUG_OUTPUT(printf("set connection mode\r\n"));
     MiApp_ConnectionMode(ENABLE_ALL_CONN);
 
-    // ReadMacAddress();
+    
     DEBUG_OUTPUT(printf("address: "));
     for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
         DEBUG_OUTPUT(printf("%02x", myLongAddress[MY_ADDRESS_LENGTH - 1 - i]));
@@ -130,15 +132,15 @@ net_return_t send(void* context, const uint8_t* data, size_t len){
     net_return_t ret = NWK_FAILURE;
     packet_meta.txComplete = false;
     //***ToDo: change to unicast
-      bool res = MiApp_SendData(SHORT_ADDR_LEN, packet_meta.address,
-                                len, data,
-                                packet_meta.send_sequence_number++, true, false, dataConfcb);
-      if (res == true) {
+    bool res = MiApp_SendData(SHORT_ADDR_LEN, packet_meta.address,
+                            len, data,
+                            packet_meta.send_sequence_number++, true, false, dataConfcb);
+    if (res == true) {
         ret = NWK_SUCCESS;
-      } else {
+    } else {
         ret = NWK_FAILURE;
         printf("send fail\r\n");
-      }
+    }
 
       // // Wait until the transmission is complete
       // while (packet_meta.txComplete != true) {
@@ -171,6 +173,26 @@ net_return_t up(void* context){
           i = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
       }
   }
+
+
+//   if (miwi_net_config.role == ACCESS_POINT) {
+//       DEBUG_OUTPUT(printf("Role = PAN Coordinator\r\n"));
+//       DEBUG_OUTPUT(printf("start PAN\r\n"));  
+//   } else {
+//       DEBUG_OUTPUT(printf("Role = Edge Node\r\n"));
+//       DEBUG_OUTPUT(printf("Connect to PAN\r\n"));
+      
+//   }
+//   if (false == MiApp_StartConnection(START_CONN_DIRECT, 10, (1L << myChannel),
+//                                   Connection_Confirm)){
+//         DEBUG_OUTPUT(printf("start connection failed!!!\r\n"));
+//     }
+
+//   uint8_t i = 0xFF;
+//   while(i == 0xFF)
+//   {
+//       i = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
+//   }
   
 
 #ifdef ENABLE_DUMP
@@ -205,21 +227,21 @@ void run_tasks(void){
 //   }
 // }
 
-// staic void ReadMacAddress(void)
-// {
-//   uint8_t* peui64 = edbg_eui_read_eui64();
-//   for(uint8_t i = 0; i<MY_ADDRESS_LENGTH; i++)
-//   {
-//       myLongAddress[i] = peui64[MY_ADDRESS_LENGTH-i-1];
-//   }
-// }
+#define NVM_UID_ADDRESS   ((volatile uint16_t *)(0x0080400AU))
 
-#define MAX_CONNECT_RETRIES (3)
-uint8_t connect_retries = 0;
+static void ReadMacAddress(void){
+    uint8_t i = 0, j = 0;
+    for (i = 0; i < MY_ADDRESS_LENGTH; i += 2, j++)
+    {
+        myLongAddress[i] = (NVM_UID_ADDRESS[j] & 0xFF);
+        myLongAddress[i + 1] = (NVM_UID_ADDRESS[j] >> 8);
+    }
+}
+
 static void Connection_Confirm(miwi_status_t status) {
 
   net_event_t connect_event; 
-  DEBUG_OUTPUT(printf("Connection Confirmation Callback\r\n"));
+  DEBUG_OUTPUT(printf("Connection Confirmation Callback status: %d\r\n", status));
   if((SUCCESS == status)||(ALREADY_EXISTS == status)){
     if(miwi_net_config.role == CLIENT_NODE){
       DEBUG_OUTPUT(printf("connected!!!\r\n"));
@@ -228,14 +250,14 @@ static void Connection_Confirm(miwi_status_t status) {
       DEBUG_OUTPUT(printf("Network Successfully Created!!!\r\n"));
       connect_event.code = NWK_EVENT_CUSTOM;
     }
-    connect_retries = 0;
-  } else {
+  } else if (FAILURE == status) {
+    DEBUG_OUTPUT(printf("connection failure\r\n"));
       if(miwi_net_config.role == CLIENT_NODE){
         connect_event.code = NWK_EVENT_DISCONNECTED;
       } else {
         connect_event.code = NWK_EVENT_ERROR;
       }
-  }
+    }
   if(callback){
     callback(&connect_event, NULL);
   }
@@ -255,9 +277,6 @@ static void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
   /*******************************************************************/
   DEBUG_OUTPUT(printf("data received: "));
 
-  // Toggle LED to indicate receiving a packet.
-  DEBUG_OUTPUT(port_pin_toggle_output_level(LED0));
-
   for (uint8_t i = startPayloadIndex; i < rxMessage.PayloadSize; i++) {
     DEBUG_OUTPUT(printf("%03i ", ind->Payload[i]));
   }
@@ -266,63 +285,63 @@ static void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
 
 static void set_random_ieee_address(void)
 {
-    // bool invalidIEEEAddrFlag = false;
-    // uint64_t invalidIEEEAddr;
+    bool invalidIEEEAddrFlag = false;
+    uint64_t invalidIEEEAddr;
 
-    // srand(PHY_RandomReq());
+    srand(PHY_RandomReq());
 
-    // /* Check if a valid IEEE address is available.
-    // 0x0000000000000000 and 0xFFFFFFFFFFFFFFFF is persumed to be invalid */
-    // /* Check if IEEE address is 0x0000000000000000 */
-    // memset((uint8_t *)&invalidIEEEAddr, 0x00, LONG_ADDR_LEN);
-    // if (0 == memcmp((uint8_t *)&invalidIEEEAddr, (uint8_t *)&myLongAddress, LONG_ADDR_LEN))
-    // {
-    //     invalidIEEEAddrFlag = true;
-    // }
+    /* Check if a valid IEEE address is available.
+    0x0000000000000000 and 0xFFFFFFFFFFFFFFFF is persumed to be invalid */
+    /* Check if IEEE address is 0x0000000000000000 */
+    memset((uint8_t *)&invalidIEEEAddr, 0x00, LONG_ADDR_LEN);
+    if (0 == memcmp((uint8_t *)&invalidIEEEAddr, (uint8_t *)&myLongAddress, LONG_ADDR_LEN))
+    {
+        invalidIEEEAddrFlag = true;
+    }
 
-    // /* Check if IEEE address is 0xFFFFFFFFFFFFFFFF */
-    // memset((uint8_t *)&invalidIEEEAddr, 0xFF, LONG_ADDR_LEN);
-    // if (0 == memcmp((uint8_t *)&invalidIEEEAddr, (uint8_t *)&myLongAddress, LONG_ADDR_LEN))
-    // {
-    //     invalidIEEEAddrFlag = true;
-    // }
+    /* Check if IEEE address is 0xFFFFFFFFFFFFFFFF */
+    memset((uint8_t *)&invalidIEEEAddr, 0xFF, LONG_ADDR_LEN);
+    if (0 == memcmp((uint8_t *)&invalidIEEEAddr, (uint8_t *)&myLongAddress, LONG_ADDR_LEN))
+    {
+        invalidIEEEAddrFlag = true;
+    }
 
-    // if (invalidIEEEAddrFlag)
-    // {
-    //      /* In case no valid IEEE address is available, a random
-    //       * IEEE address will be generated to be able to run the
-    //       * applications for demonstration purposes.
-    //       * In production code this can be omitted.
-    //      */
-    //     uint8_t* peui64 = (uint8_t *)&myLongAddress;
-    //     for(uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++)
-    //     {
-    //         *peui64++ = (uint8_t)rand();
-    //     }
-    // }
+    if (invalidIEEEAddrFlag)
+    {
+         /* In case no valid IEEE address is available, a random
+          * IEEE address will be generated to be able to run the
+          * applications for demonstration purposes.
+          * In production code this can be omitted.
+         */
+        uint8_t* peui64 = (uint8_t *)&myLongAddress;
+        for(uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++)
+        {
+            *peui64++ = (uint8_t)rand();
+        }
+    }
 
     
 
-    if (miwi_net_config.role == ACCESS_POINT) {
-      myLongAddress[0] = 0x01;
-      myLongAddress[1] = 0x02;
-      myLongAddress[2] = 0x03;
-      myLongAddress[3] = 0x04;
-      myLongAddress[4] = 0x05;
-      myLongAddress[5] = 0x06;
-      myLongAddress[6] = 0x07;
-      myLongAddress[7] = 0x08;
+    // if (miwi_net_config.role == ACCESS_POINT) {
+    //   myLongAddress[0] = 0x01;
+    //   myLongAddress[1] = 0x02;
+    //   myLongAddress[2] = 0x03;
+    //   myLongAddress[3] = 0x04;
+    //   myLongAddress[4] = 0x05;
+    //   myLongAddress[5] = 0x06;
+    //   myLongAddress[6] = 0x07;
+    //   myLongAddress[7] = 0x08;
       
-    } else {
-      myLongAddress[0] = 0x11;
-      myLongAddress[1] = 0x12;
-      myLongAddress[2] = 0x13;
-      myLongAddress[3] = 0x14;
-      myLongAddress[4] = 0x15;
-      myLongAddress[5] = 0x16;
-      myLongAddress[6] = 0x17;
-      myLongAddress[7] = 0x18;
-    }
+    // } else {
+    //   myLongAddress[0] = 0x11;
+    //   myLongAddress[1] = 0x12;
+    //   myLongAddress[2] = 0x13;
+    //   myLongAddress[3] = 0x14;
+    //   myLongAddress[4] = 0x15;
+    //   myLongAddress[5] = 0x16;
+    //   myLongAddress[6] = 0x17;
+    //   myLongAddress[7] = 0x18;
+    // }
     
     /* Set the address in transceiver */
     PHY_SetIEEEAddr((uint8_t *)&myLongAddress);

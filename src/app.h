@@ -10,6 +10,19 @@
 #define APP_H_
 
 #include "miwi_api.h"
+#include <stdbool.h>
+
+typedef enum {
+  STATE_INIT,
+  STATE_DISCONNECTED,
+  STATE_CONNECTED
+} app_state_t;
+
+typedef struct{
+    bool isTimeForHeartbeat;
+    uint32_t counter;
+    app_state_t state;
+} app_data_t;
 
 void AppInit(void);
 void AppTask(void);

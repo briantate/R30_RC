@@ -16,6 +16,7 @@
 #include "miwi_api.h"
 #include "network_management.h"
 #include "network_interface.h"
+#include "sysTimer.h"
 // #include "rf_transceiver.h"
 
 static net_api_t* net = NULL; 
@@ -33,11 +34,7 @@ bool last_sw_state = true;
 // static bool txComplete = true;
 // static bool connected = false;
 
-typedef enum {
-  STATE_INIT,
-  STATE_DISCONNECTED,
-  STATE_CONNECTED
-} APP_STATE_T;
+
 
 #define L_XDIR_POS 0
 #define L_YDIR_POS 1
@@ -60,13 +57,26 @@ static void net_event_cb(const net_event_t* event, void* user_data);
 // static void main_clock_select_dfll(void);
 // static void main_clock_select(const enum system_clock_source clock_source);
 
-APP_STATE_T appState = STATE_INIT;
+app_data_t app_data = {
+  .state = STATE_INIT,
+  .isTimeForHeartbeat = false,
+  .counter = 0
+};
+// APP_STATE_T appState = STATE_INIT;
+
+static void app_timer_handler(struct SYS_Timer_t *timer);
+
+static SYS_Timer_t app_timer;
 
 void AppInit(void) {
   CustomBoardInit();
   delay_init();     // used to to initialize radio interface
   SYS_TimerInit();  // used as a symbol timer by the MiWi stack
   configure_console();
+
+  app_timer.interval = ONE_SECOND;
+  app_timer.mode = SYS_TIMER_PERIODIC_MODE;
+  app_timer.handler = app_timer_handler;
 
   printf("R30 Remote Control Project\r\n");
   uint32_t cpuClock = system_cpu_clock_get_hz();
@@ -94,21 +104,26 @@ void AppInit(void) {
   net = network_get_interface();
 }
 
-volatile uint32_t counter = 0;
+volatile uint32_t disconnected_counter = 0;
 
 void AppTask(void) {
 
   // poor man's non-blocking delay to blink a system LED
-    if (counter++ >= 100) {
-      counter = 0;
+    // if (counter++ >= 100) {
+    //   counter = 0;
+    //   port_pin_toggle_output_level(LED1);
+    // }
+
+    if(app_data.counter++ >= 10000){
+      app_data.counter = 0;
       port_pin_toggle_output_level(LED1);
     }
   
   // remote control state machine:
-  switch (appState) {
+  switch (app_data.state) {
     case STATE_INIT: {
-      appState = STATE_CONNECTED;
-
+      app_data.state = STATE_CONNECTED;
+      SYS_TimerStart(&app_timer);
       net->register_callback(NULL, net_event_cb);
       net->up(NULL);
     }
@@ -117,8 +132,21 @@ void AppTask(void) {
       // try to connect
       // timeout?
       // if (connected) {
-      //   appState = STATE_WAIT;
+      //   app_data.state = STATE_WAIT;
       // }
+      if(disconnected_counter++ >=20000){
+        disconnected_counter = 0;
+        DEBUG_OUTPUT(printf("."));
+      }
+      bool sw_state = port_pin_get_input_level(SW0_PIN);
+      if(!sw_state){
+        if(!last_sw_state){
+          sendDataBuffer[5] = 0xA5;
+          net->send(NULL, sendDataBuffer, 6 );
+        }
+      }
+      last_sw_state = sw_state;
+      
       break;
     }
     case STATE_CONNECTED: {
@@ -138,8 +166,6 @@ void AppTask(void) {
 }
 
 void sample_joysticks(void){
-
-
       // sample joysticks
       Joystick_Measure(leftJoystick);
       Joystick_Measure(rightJoystick);
@@ -167,9 +193,6 @@ void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
   /*******************************************************************/
   DEBUG_OUTPUT(printf("data received: "));
 
-  // Toggle LED to indicate receiving a packet.
-  DEBUG_OUTPUT(port_pin_toggle_output_level(LED0));
-
   for (uint8_t i = startPayloadIndex; i < rxMessage.PayloadSize; i++) {
     DEBUG_OUTPUT(printf("%03i ", ind->Payload[i]));
   }
@@ -179,13 +202,18 @@ void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
 uint8_t retry_count = 0;
 static void net_event_cb(const net_event_t* event, void* user_data){
   if(event->code == NWK_EVENT_CONNECTED || event->code == NWK_EVENT_CUSTOM){
-    DEBUG_OUTPUT(printf("connected!\r\n"));
-    appState = STATE_CONNECTED;
+    DEBUG_OUTPUT(printf("app connected!\r\n"));
+    DEBUG_OUTPUT(port_pin_set_output_level(LED0, false));
+    app_data.state = STATE_CONNECTED;
   }
   else{
-    DEBUG_OUTPUT(printf("disconnected! retry attempt %d\r\n", ++retry_count));
-    appState = STATE_DISCONNECTED;
-    net->up(NULL);
+    DEBUG_OUTPUT(printf("app disconnected! retry attempt %d\r\n", ++retry_count));
+    DEBUG_OUTPUT(port_pin_set_output_level(LED0, true));
+    app_data.state = STATE_DISCONNECTED;
   }
+}
+
+static void app_timer_handler(struct SYS_Timer_t *timer){
+  app_data.isTimeForHeartbeat = true;
 }
 

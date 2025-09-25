@@ -173,14 +173,14 @@
 // ENABLE_SLEEP_FEATURE will enable the device to go to sleep and wake up 
 // from the sleep
 /*********************************************************************/
-#define ENABLE_SLEEP_FEATURE
+// #define ENABLE_SLEEP_FEATURE
 
 
 /*********************************************************************/
 // ENABLE_ED_SCAN will enable the device to do an energy detection scan
 // to find out the channel with least noise and operate on that channel
 /*********************************************************************/
-#define ENABLE_ED_SCAN
+// #define ENABLE_ED_SCAN
 
 
 /*********************************************************************/
@@ -224,7 +224,7 @@
 // ENABLE_FREQUENCY_AGILITY will enable the device to change operating
 // channel to bypass the sudden change of noise
 /*********************************************************************/
-#define ENABLE_FREQUENCY_AGILITY
+// #define ENABLE_FREQUENCY_AGILITY
 
 
 #if !defined(PROTOCOL_P2P) && !defined(PROTOCOL_STAR) && !defined(PROTOCOL_MESH) 
