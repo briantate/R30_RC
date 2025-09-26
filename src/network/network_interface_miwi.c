@@ -173,26 +173,6 @@ net_return_t up(void* context){
           i = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
       }
   }
-
-
-//   if (miwi_net_config.role == ACCESS_POINT) {
-//       DEBUG_OUTPUT(printf("Role = PAN Coordinator\r\n"));
-//       DEBUG_OUTPUT(printf("start PAN\r\n"));  
-//   } else {
-//       DEBUG_OUTPUT(printf("Role = Edge Node\r\n"));
-//       DEBUG_OUTPUT(printf("Connect to PAN\r\n"));
-      
-//   }
-//   if (false == MiApp_StartConnection(START_CONN_DIRECT, 10, (1L << myChannel),
-//                                   Connection_Confirm)){
-//         DEBUG_OUTPUT(printf("start connection failed!!!\r\n"));
-//     }
-
-//   uint8_t i = 0xFF;
-//   while(i == 0xFF)
-//   {
-//       i = MiApp_EstablishConnection(myChannel, 0, NULL, 0, Connection_Confirm);
-//   }
   
 
 #ifdef ENABLE_DUMP
