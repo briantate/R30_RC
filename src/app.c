@@ -14,7 +14,6 @@
 #include "debug_interface.h" //for debug logging
 #include "joystick.h"
 #include "miwi_api.h"
-#include "network_management.h"
 #include "network_interface.h"
 #include "sysTimer.h"
 

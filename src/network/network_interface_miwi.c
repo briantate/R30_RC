@@ -133,7 +133,7 @@ net_return_t send(void* context, const uint8_t* data, size_t len){
     packet_meta.txComplete = false;
     //***ToDo: change to unicast
     bool res = MiApp_SendData(SHORT_ADDR_LEN, packet_meta.address,
-                            len, data,
+                            len, (uint8_t *)data,
                             packet_meta.send_sequence_number++, true, false, dataConfcb);
     if (res == true) {
         ret = NWK_SUCCESS;
@@ -141,18 +141,6 @@ net_return_t send(void* context, const uint8_t* data, size_t len){
         ret = NWK_FAILURE;
         printf("send fail\r\n");
     }
-
-      // // Wait until the transmission is complete
-      // while (packet_meta.txComplete != true) {
-      //   P2PTasks();  // Let Mi-Wi stack process data while waiting for callback
-      //   if (packet_meta.timeoutCount > 0xFF)  // ToDo: sometimes dataConfCallback is not
-      //                             // called - check into this
-      //   {
-      //     break;  // no dataConfcb -- discard the packet and continue
-      //   }
-      //   packet_meta.timeoutCount++;
-      // }
-      // packet_meta.timeoutCount = 0;
     return ret;
 }
 
