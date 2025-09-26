@@ -2,7 +2,7 @@
  * network_management.c
  *
  * Created: 10/23/2018 11:24:26 AM
- *  Author: C41175
+ *  Author: Brian Tate
  */
 
 #include "network_management.h"

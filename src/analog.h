@@ -2,7 +2,7 @@
  * analog.h
  *
  * Created: 4/2/2019 5:58:39 AM
- *  Author: C41175
+ *  Author: Brian Tate
  * 
  * Wrapper for ADC to match Joystick interface
  *

@@ -2,7 +2,7 @@
  * analog.c
  *
  * Created: 4/2/2019 5:58:19 AM
- *  Author: C41175
+ *  Author: Brian Tate
  */
 
 #include "analog.h"

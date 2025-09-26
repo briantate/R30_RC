@@ -2,7 +2,7 @@
  * debug_interface.h
  *
  * Created: 10/23/2018 8:35:26 AM
- *  Author: C41175
+ *  Author: Brian Tate
  */ 
 
 

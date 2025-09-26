@@ -2,7 +2,7 @@
  * custom_board.h
  *
  * Created: 11/1/2018 3:48:58 PM
- *  Author: C41175
+ *  Author: Brian Tate
  */ 
 
 

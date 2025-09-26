@@ -2,7 +2,7 @@
  * rf_transceiver.c
  *
  * Created: 10/23/2018 9:06:10 AM
- *  Author: C41175
+ *  Author: Brian Tate
  */
 
 #include "rf_transceiver.h"
