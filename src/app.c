@@ -17,14 +17,11 @@
 #include "network_interface.h"
 #include "sysTimer.h"
 
-static net_api_t* net = NULL; 
-
+/*************************************************************************/
+/*                          definitions and macros                       */
+/*************************************************************************/
 #define SEND_BUFFER_SIZE 6
 #define RECEIVE_BUFFER_SIZE 6
-
-static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
-// static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
-bool last_sw_state = true;
 
 #define L_XDIR_POS 0
 #define L_YDIR_POS 1
@@ -35,11 +32,21 @@ bool last_sw_state = true;
 #define A_BUTTON_POS 2
 #define B_BUTTON_POS 3
 
-// handles for joysticks
+/*************************************************************************/
+/*                          callbacks.                                   */
+/*************************************************************************/
+static void net_event_cb(const net_event_t* event, void* user_data);
+static void app_timer_handler(struct SYS_Timer_t *timer);
+
+/*************************************************************************/
+/*                          local variables                              */
+/*************************************************************************/
+static net_api_t* net = NULL; 
+static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
+// static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
+static bool last_sw_state = true;
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
-
-static void net_event_cb(const net_event_t* event, void* user_data);
 
 app_data_t app_data = {
   .state = STATE_INIT,
@@ -47,9 +54,16 @@ app_data_t app_data = {
   .counter = 0
 };
 
-static void app_timer_handler(struct SYS_Timer_t *timer);
-
 static SYS_Timer_t app_timer;
+
+/*************************************************************************/
+/*                          private prototypes                           */
+/*************************************************************************/
+static void sample_joysticks(void);
+
+/*************************************************************************/
+/*                          public API                                   */
+/*************************************************************************/
 
 void AppInit(void) {
   CustomBoardInit();
@@ -130,7 +144,28 @@ void AppTask(void) {
   }
 }
 
-void sample_joysticks(void){
+
+/*************************************************************************/
+/*                          private implementations                      */
+/*************************************************************************/
+static void net_event_cb(const net_event_t* event, void* user_data){
+  if(event->code == NWK_EVENT_CONNECTED || event->code == NWK_EVENT_CUSTOM){
+    DEBUG_OUTPUT(printf("app connected!\r\n"));
+    DEBUG_OUTPUT(port_pin_set_output_level(LED0, false));
+    app_data.state = STATE_CONNECTED;
+  }
+  else{
+    DEBUG_OUTPUT(printf("app disconnected!\r\n"));
+    DEBUG_OUTPUT(port_pin_set_output_level(LED0, true));
+    app_data.state = STATE_DISCONNECTED;
+  }
+}
+
+static void app_timer_handler(struct SYS_Timer_t *timer){
+  app_data.isTimeForHeartbeat = true;
+}
+
+static void sample_joysticks(void){
       // sample joysticks
       Joystick_Measure(leftJoystick);
       Joystick_Measure(rightJoystick);
@@ -148,22 +183,5 @@ void sample_joysticks(void){
       // pack button data
       sendDataBuffer[5] = (uint8_t)port_pin_get_input_level(SW0_PIN);
 
-}
-
-static void net_event_cb(const net_event_t* event, void* user_data){
-  if(event->code == NWK_EVENT_CONNECTED || event->code == NWK_EVENT_CUSTOM){
-    DEBUG_OUTPUT(printf("app connected!\r\n"));
-    DEBUG_OUTPUT(port_pin_set_output_level(LED0, false));
-    app_data.state = STATE_CONNECTED;
-  }
-  else{
-    DEBUG_OUTPUT(printf("app disconnected!\r\n"));
-    DEBUG_OUTPUT(port_pin_set_output_level(LED0, true));
-    app_data.state = STATE_DISCONNECTED;
-  }
-}
-
-static void app_timer_handler(struct SYS_Timer_t *timer){
-  app_data.isTimeForHeartbeat = true;
 }
 

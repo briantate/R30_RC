@@ -21,6 +21,7 @@
 //#define DEBUG_UART_DMAC_ID_TX   SERCOM0_DMAC_ID_TX
 //#define DEBUG_UART_DMAC_ID_RX   SERCOM0_DMAC_ID_RX
 
+// #define DEBUG_OUTPUT(x) 
 #define DEBUG_OUTPUT(x) x
 
 /************************************************************************

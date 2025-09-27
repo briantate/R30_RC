@@ -11,11 +11,22 @@
 #include "asf.h"
 #include "custom_board.h"
 
-#define CHANNEL_MAP (0x03FF) //enable channels 1-10 for 900MHz band
-uint16_t broadcastAddress = 0xFFFF;
-extern API_UINT16_UNION  myPANID;
 
+/*************************************************************************/
+/*                          definitions and macros                       */
+/*************************************************************************/
+#define CHANNEL_MAP (0x03FF) //enable channels 1-10 for 900MHz band
+#define NVM_UID_ADDRESS   ((volatile uint16_t *)(0x0080400AU))
+
+/*************************************************************************/
+/*                          local variables                              */
+/*************************************************************************/
+static const uint16_t broadcastAddress = 0xFFFF;
 static net_config_t miwi_net_config = {0};
+static uint8_t myChannel = 3;
+static net_event_callback_t callback = NULL;
+
+extern API_UINT16_UNION  myPANID;
 
 /*************************************************************************/
 
@@ -23,20 +34,19 @@ static net_config_t miwi_net_config = {0};
 // information to identify a device on a PAN. This array
 // will be transmitted when initiate the connection between
 // the two devices. This  variable array will be stored in
-// the Connection Entry structure of the partner device. The
-// size of this array is ADDITIONAL_NODE_ID_SIZE, defined in
-// miwi_config.h.
-// In this demo, this variable array is set to be empty.
+// the Connection Entry structure of the partner device. 
+// Typical use cases might be a node type (sensor, actuator, etc...), 
+// device specific role, etc... 
+// In the future, I might use this to define a specific type of remote 
+// control or add capabilites, etc...
 
 /*************************************************************************/
-#if ADDITIONAL_NODE_ID_SIZE > 0
 uint8_t        AdditionalNodeID[ADDITIONAL_NODE_ID_SIZE] = {0x00};
-#endif
 
-/* Connection Table Memory */
-CONNECTION_ENTRY connectionTable[CONNECTION_SIZE];
 
-defaultParametersRomOrRam_t defaultParamsRomOrRam = {
+CONNECTION_ENTRY connectionTable[CONNECTION_SIZE]; // Connection Table Memory
+
+defaultParametersRomOrRam_t defaultParamsRomOrRam = { //MiWi configuration data
     .ConnectionTable = &connectionTable[0],
     #if ADDITIONAL_NODE_ID_SIZE > 0
     .AdditionalNodeID = &AdditionalNodeID[0],
@@ -48,6 +58,7 @@ defaultParametersRamOnly_t defaultParamsRamOnly = {
     .dummy = 0,
 };
 
+// a structure to hold meta data about a packet
 typedef struct {
   uint8_t *address;
   bool txComplete;
@@ -55,21 +66,16 @@ typedef struct {
   uint32_t timeoutCount;
 }packet_meta_t;
 
-//file scope variables
-static uint8_t myChannel = 3;
-
-net_event_callback_t callback = NULL;
-net_event_t event = {0};
-//ToDo create event queue
-
 static packet_meta_t packet_meta = {
-  .address = (uint8_t*)&broadcastAddress,
+  .address = (uint8_t*)&broadcastAddress, //ToDo: change to unicast
   .txComplete = true,
   .send_sequence_number = 0,
   .timeoutCount = 0
 };
 
-//private prototypes
+/*************************************************************************/
+/*                          private prototypes                           */
+/*************************************************************************/
 static void ReadMacAddress(void);
 static void Connection_Confirm(miwi_status_t status);
 static void dataConfcb(uint8_t handle, miwi_status_t status,
@@ -78,7 +84,9 @@ static void ReceivedDataIndication(RECEIVED_MESSAGE* ind);
 static void set_random_ieee_address(void);
 
 
-//public API
+/*************************************************************************/
+/*                          public API                                   */
+/*************************************************************************/
 net_return_t register_callback(void* context, net_event_callback_t cb){
     callback = cb;
     return NWK_SUCCESS;
@@ -88,9 +96,6 @@ net_return_t init(void* context){
     net_return_t ret = NWK_FAILURE;
 
     TransceiverConfig();  // initialize pins to the radio
-
-    DEBUG_OUTPUT(printf("network init\r\n"));
-
     ReadMacAddress();
 
     miwi_status_t status = MiApp_ProtocolInit(&defaultParamsRomOrRam, &defaultParamsRamOnly);
@@ -100,6 +105,10 @@ net_return_t init(void* context){
         return ret;
     }
 
+    // for testing purposes:
+    // added a pin to select the mi-wi role type (coordinator or edge)
+    // to allow the same board to be either based on pin state
+    // add a jumper to ROLE_PIN to VCC for coordinator
     miwi_net_config.role = port_pin_get_input_level(ROLE_PIN);
 
     set_random_ieee_address();
@@ -139,7 +148,6 @@ net_return_t send(void* context, const uint8_t* data, size_t len){
         ret = NWK_SUCCESS;
     } else {
         ret = NWK_FAILURE;
-        printf("send fail\r\n");
     }
     return ret;
 }
@@ -182,20 +190,9 @@ void run_tasks(void){
     P2PTasks();
 }
 
-
-
-// private functions
-// static void ReadMacAddress(void) {
-//   // placholder function to read MAC address
-//   for (uint8_t i = 0; i < MY_ADDRESS_LENGTH; i++) {
-//     myLongAddress[i] = i + 1;
-//   }
-//   if (NETWORK_ROLE) {
-//     myLongAddress[0] += 1;
-//   }
-// }
-
-#define NVM_UID_ADDRESS   ((volatile uint16_t *)(0x0080400AU))
+/*************************************************************************/
+/*                          private implementations                      */
+/*************************************************************************/
 
 static void ReadMacAddress(void){
     uint8_t i = 0, j = 0;
@@ -239,10 +236,6 @@ static void dataConfcb(uint8_t handle, miwi_status_t status,
 
 static void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
   uint8_t startPayloadIndex = 0;
-  /*******************************************************************/
-  // If a packet has been received, handle the information available
-  // in rxMessage.
-  /*******************************************************************/
   DEBUG_OUTPUT(printf("data received: "));
 
   for (uint8_t i = startPayloadIndex; i < rxMessage.PayloadSize; i++) {
@@ -287,31 +280,7 @@ static void set_random_ieee_address(void)
             *peui64++ = (uint8_t)rand();
         }
     }
-
     
-
-    // if (miwi_net_config.role == ACCESS_POINT) {
-    //   myLongAddress[0] = 0x01;
-    //   myLongAddress[1] = 0x02;
-    //   myLongAddress[2] = 0x03;
-    //   myLongAddress[3] = 0x04;
-    //   myLongAddress[4] = 0x05;
-    //   myLongAddress[5] = 0x06;
-    //   myLongAddress[6] = 0x07;
-    //   myLongAddress[7] = 0x08;
-      
-    // } else {
-    //   myLongAddress[0] = 0x11;
-    //   myLongAddress[1] = 0x12;
-    //   myLongAddress[2] = 0x13;
-    //   myLongAddress[3] = 0x14;
-    //   myLongAddress[4] = 0x15;
-    //   myLongAddress[5] = 0x16;
-    //   myLongAddress[6] = 0x17;
-    //   myLongAddress[7] = 0x18;
-    // }
-    
-    /* Set the address in transceiver */
     PHY_SetIEEEAddr((uint8_t *)&myLongAddress);
 }
 
