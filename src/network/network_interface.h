@@ -40,21 +40,18 @@ typedef struct{
 typedef struct {
     net_event_code_t code;
     void* source;  // back-pointer to NetworkDevice or context
-
     union {
         struct {
-            const uint8_t* data;
-            size_t len;
+            uint8_t		*source_address;             // pointer to the source address
+            uint8_t		*payload;                   // pointer to the application payload
+            uint8_t		payload_size;                // application payload length
+            uint8_t		packet_RSSI;                 // RSSI value of the receive message
+            uint8_t 	packet_LQI;                  // LQI value of the received message
         } data;
 
         struct {
             int error_code;
         } error;
-
-        struct {
-            int rssi;
-            int lqi;
-        } metrics;
 
         struct {
             const void* custom_data;

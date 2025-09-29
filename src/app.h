@@ -21,6 +21,7 @@ typedef enum {
 
 typedef struct{
     bool isTimeForHeartbeat;
+    bool isTimeForTransmit;
     uint32_t counter;
     app_state_t state;
 } app_data_t;

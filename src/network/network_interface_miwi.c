@@ -25,6 +25,7 @@ static const uint16_t broadcastAddress = 0xFFFF;
 static net_config_t miwi_net_config = {0};
 static uint8_t myChannel = 3;
 static net_event_callback_t callback = NULL;
+static net_state_t state = UNINITIALIZED;
 
 extern API_UINT16_UNION  myPANID;
 
@@ -131,6 +132,7 @@ net_return_t init(void* context){
     }
 
     DEBUG_OUTPUT(printf("\r\n"));
+    state = DISCONNECTED;
 
     ret = NWK_SUCCESS;
 
@@ -179,11 +181,12 @@ net_return_t up(void* context){
 }
 
 net_return_t down(void* context){
+    //ToDo: is there a way to disconnect in MiWi P2P?
     return NWK_SUCCESS;
 }
 
 net_state_t  status(void){
-    return DISCONNECTED;
+    return state;
 }
 
 void run_tasks(void){
@@ -208,6 +211,7 @@ static void Connection_Confirm(miwi_status_t status) {
   net_event_t connect_event; 
   DEBUG_OUTPUT(printf("Connection Confirmation Callback status: %d\r\n", status));
   if((SUCCESS == status)||(ALREADY_EXISTS == status)){
+    state = CONNECTED;
     if(miwi_net_config.role == CLIENT_NODE){
       DEBUG_OUTPUT(printf("connected!!!\r\n"));
       connect_event.code = NWK_EVENT_CONNECTED;
@@ -216,6 +220,7 @@ static void Connection_Confirm(miwi_status_t status) {
       connect_event.code = NWK_EVENT_CUSTOM;
     }
   } else if (FAILURE == status) {
+    state = DISCONNECTED;
     DEBUG_OUTPUT(printf("connection failure\r\n"));
       if(miwi_net_config.role == CLIENT_NODE){
         connect_event.code = NWK_EVENT_DISCONNECTED;
@@ -230,18 +235,21 @@ static void Connection_Confirm(miwi_status_t status) {
 
 static void dataConfcb(uint8_t handle, miwi_status_t status,
                        uint8_t* msgPointer) {
-  DEBUG_OUTPUT(printf("Data Confirmation Callback\r\n"));
   MiMem_Free(msgPointer);
 }
 
 static void ReceivedDataIndication(RECEIVED_MESSAGE* ind) {
-  uint8_t startPayloadIndex = 0;
-  DEBUG_OUTPUT(printf("data received: "));
+    net_event_t data_event;
 
-  for (uint8_t i = startPayloadIndex; i < rxMessage.PayloadSize; i++) {
-    DEBUG_OUTPUT(printf("%03i ", ind->Payload[i]));
-  }
-  DEBUG_OUTPUT(printf("\r\n"));
+    data_event.code = NWK_EVENT_DATA_RECEIVED;
+    data_event.data.payload = ind->Payload;
+    data_event.data.payload_size = ind->PayloadSize;
+    data_event.data.packet_LQI = ind->PacketLQI;
+    data_event.data.packet_RSSI = ind->PacketRSSI;
+    data_event.data.source_address = ind->SourceAddress;
+    if(callback){
+        callback(&data_event, NULL);
+    }
 }
 
 static void set_random_ieee_address(void)
