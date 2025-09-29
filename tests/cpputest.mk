@@ -24,8 +24,6 @@ PROJECT_HOME_DIR = /home/app
 #
 SRC_FILES := $(shell find tests -type f -name '*.c')
 SRC_FILES += src/StateMachine/StateMachine.c
-SRC_FILES += src/network/network_client_miwi.c
-SRC_FILES += src/network/network_client.c
 # SRC_DIRS += 
 
 # --- TEST_SRC_FILES and TEST_SRC_DIRS ---
