@@ -16,6 +16,8 @@
 #include "miwi_api.h"
 #include "network_interface.h"
 #include "sysTimer.h"
+#include "state_machine.h"
+#include "state.h"
 
 /*************************************************************************/
 /*                          definitions and macros                       */

@@ -3,8 +3,8 @@
 // It uses a minimal, internal state machine definition for testing purposes.
 
 #include "CppUTest/TestHarness.h"
-#include "StateMachine.h"   // Include the generic state machine interface
-#include "State.h"          // Include generic State_t definition
+#include "state_machine.h"   // Include the generic state machine interface
+#include "state.h"          // Include generic State_t definition
 #include <stdbool.h>        // For bool type
 
 // --- Internal Generic State Machine Definitions for Testing ---

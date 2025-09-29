@@ -23,7 +23,7 @@ PROJECT_HOME_DIR = /home/app
 # production code C and CPP files.
 #
 SRC_FILES := $(shell find tests -type f -name '*.c')
-SRC_FILES += src/StateMachine/StateMachine.c
+SRC_FILES += src/state_machine/state_machine.c
 # SRC_DIRS += 
 
 # --- TEST_SRC_FILES and TEST_SRC_DIRS ---
@@ -56,7 +56,7 @@ CPPUTEST_USE_GCOV = Y
 INCLUDE_DIRS += src
 INCLUDE_DIRS += src/config
 INCLUDE_DIRS += src/network
-INCLUDE_DIRS += src/StateMachine
+INCLUDE_DIRS += src/state_machine
 # INCLUDE_DIRS += src/ASF/common/boards
 # INCLUDE_DIRS += src/ASF/common/services/serial
 # INCLUDE_DIRS += src/ASF/common/services/serial/sam0_usart

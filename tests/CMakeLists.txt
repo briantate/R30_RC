@@ -16,14 +16,14 @@ set(TEST_DIR .)              # The current directory is 'tests/TestStateMachine/
 # Add include directories
 include_directories(
     ${SRC_ROOT_DIR}
-    ${SRC_ROOT_DIR}/StateMachine # This covers StateMachine.h, Event.h, and State.h
+    ${SRC_ROOT_DIR}/state_machine # This covers StateMachine.h, Event.h, and State.h
     ${TEST_DIR}                  # This covers headers directly in this test directory
     ${CPPUTEST_INCLUDE_DIRS}
 )
 
 # Define the source files for the state machine modules being tested (relative to SRC_ROOT_DIR)
 set(STATE_MACHINE_SRCS
-    ${SRC_ROOT_DIR}/StateMachine/StateMachine.c
+    ${SRC_ROOT_DIR}/state_machine/state_machine.c
     # DoorFSM.c is an application-specific module and should NOT be included
     # in the generic StateMachine tests for isolation.
     # If you create a tests/TestDoorFSM/ directory, DoorFSM.c would be linked there.
@@ -31,9 +31,9 @@ set(STATE_MACHINE_SRCS
 
 # Define the header files (not compiled directly, but good for reference)
 set(STATE_MACHINE_HDRS
-    ${SRC_ROOT_DIR}/StateMachine/Event.h
-    ${SRC_ROOT_DIR}/StateMachine/State.h
-    ${SRC_ROOT_DIR}/StateMachine/StateMachine.h
+    ${SRC_ROOT_DIR}/state_machine/event.h
+    ${SRC_ROOT_DIR}/state_machine/state.h
+    ${SRC_ROOT_DIR}/state_machine/state_machine.h
     ${SRC_ROOT_DIR}/DoorFSM.h # This header is still needed for DoorFSM.c if it were linked here
 )
 

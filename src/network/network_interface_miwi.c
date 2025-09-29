@@ -181,7 +181,7 @@ net_return_t up(void* context){
 }
 
 net_return_t down(void* context){
-    //ToDo: is there a way to disconnect in MiWi P2P?
+    //ToDo: MiApp_RemoveConnection(uint8_t ConnectionIndex)
     return NWK_SUCCESS;
 }
 

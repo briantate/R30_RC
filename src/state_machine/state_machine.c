@@ -1,5 +1,5 @@
-// StateMachine.c
-#include "StateMachine.h"
+// state_machine.c
+#include "state_machine.h"
 
 #include <stddef.h>  // For NULL
 
