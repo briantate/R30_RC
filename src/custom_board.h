@@ -11,6 +11,7 @@
 
 #define LED0 PIN_PA19
 #define LED1 PIN_PA18
+#define LED2 PIN_PB02
 #define LED_ON  false
 #define LED_OFF true
 

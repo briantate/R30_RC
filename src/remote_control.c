@@ -5,7 +5,7 @@
  *  Author: Brian Tate
  */
 
-#include "app.h"
+#include "remote_control.h"
 
 #include "analog.h"
 #include "asf.h"
@@ -62,7 +62,6 @@ static void error_state_exit(FSM_t *fsm);
 static net_api_t* net = NULL; 
 static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
 // static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
-static bool last_sw_state = true;
 static bool last_left_button_state = true;
 static bool last_right_button_state = true;
 volatile joystickPtr leftJoystick;
@@ -107,7 +106,7 @@ static bool check_double_button_press(void);
 /*                          public API                                   */
 /*************************************************************************/
 
-void AppInit(void) {
+void RemoteControlInit(void) {
   CustomBoardInit();
   delay_init();     // used to to initialize radio interface
   SYS_TimerInit();  // used as a symbol timer by the MiWi stack
@@ -139,11 +138,12 @@ void AppInit(void) {
 
 volatile uint32_t disconnected_counter = 0;
 
-void AppTask(void) {
+void RemoteControlTask(void) {
   if(app_data.isTimeForHeartbeat)
   {
     app_data.isTimeForHeartbeat = false;
     port_pin_toggle_output_level(LED1);
+    port_pin_toggle_output_level(LED2);
   }
 
   FSM_HandleEvent(&remote_control_fsm, EVENT_NONE);
@@ -238,14 +238,6 @@ static void init_state_exit(FSM_t *fsm){
 }
 
 static void disconnected_state_handle_event(FSM_t *fsm, event_t event){
-  // bool sw_state = port_pin_get_input_level(SW0_PIN);
-  // if(!sw_state){
-  //   if(last_sw_state){
-  //     DEBUG_OUTPUT(printf("reconnect...\r\n"));
-  //     net->up(NULL);
-  //   }
-  // }
-  // last_sw_state = sw_state;
 
   if(check_double_button_press()){
     DEBUG_OUTPUT(printf("reconnect...\r\n"));

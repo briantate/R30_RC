@@ -27,9 +27,8 @@ typedef struct{
     app_state_t state;
 } app_data_t;
 
-void AppInit(void);
-void AppTask(void);
-void ReceivedDataIndication (RECEIVED_MESSAGE *ind);
+void RemoteControlInit(void);
+void RemoteControlTask(void);
 
 
 #endif /* APP_H_ */

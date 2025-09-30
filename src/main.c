@@ -28,18 +28,18 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip
  * Support</a>
  */
-#include "app.h"
+#include "remote_control.h"
 #include "asf.h"
 #include "network_internal.h"
 
 int main(void) {
   system_init();
 
-  AppInit();
+  RemoteControlInit();
   network_init();
 
   while (1) {
-    AppTask();
+    RemoteControlTask();
     network_tasks();
   }
 }

@@ -37,8 +37,10 @@ void CustomBoardInit(void) {
   config_port_pin.direction = PORT_PIN_DIR_OUTPUT;
   port_pin_set_config(LED0, &config_port_pin);
   port_pin_set_config(LED1, &config_port_pin);
+  port_pin_set_config(LED2, &config_port_pin);
   port_pin_set_output_level(LED0, LED_OFF);
   port_pin_set_output_level(LED1, LED_OFF);
+  port_pin_set_output_level(LED2, LED_OFF);
 }
 
 uint8_t extintCount = 0;
