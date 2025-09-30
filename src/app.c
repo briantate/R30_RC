@@ -35,12 +35,26 @@
 #define A_BUTTON_POS 2
 #define B_BUTTON_POS 3
 
+#define EVENT_NONE 1
+
 /*************************************************************************/
 /*                          callbacks                                    */
 /*************************************************************************/
 static void net_event_cb(const net_event_t* event, void* user_data);
 static void heartbeat_timer_handler(struct SYS_Timer_t *timer);
 static void transmit_timer_handler(struct SYS_Timer_t *timer);
+
+static void init_state_handle_event(FSM_t *fsm, event_t event);
+static void init_state_exit(FSM_t *fsm);
+static void disconnected_state_handle_event(FSM_t *fsm, event_t event);
+static void disconnected_state_entry(FSM_t *fsm);
+static void disconnected_state_exit(FSM_t *fsm);
+static void connected_state_handle_event(FSM_t *fsm, event_t event);
+static void connected_state_entry(FSM_t *fsm);
+static void connected_state_exit(FSM_t *fsm);
+static void error_state_handle_event(FSM_t *fsm, event_t event);
+static void error_state_entry(FSM_t *fsm);
+static void error_state_exit(FSM_t *fsm);
 
 /*************************************************************************/
 /*                          local variables                              */
@@ -70,6 +84,16 @@ static SYS_Timer_t transmit_timer = {
   .mode = SYS_TIMER_PERIODIC_MODE,
   .handler = transmit_timer_handler
 };
+
+// state table
+const State_t app_state_table[NUM_STATES] = {
+    [STATE_INIT]         = { .event_handler = init_state_handle_event, .entry_handler = NULL, .exit_handler = init_state_exit },
+    [STATE_DISCONNECTED] = { .event_handler = disconnected_state_handle_event, .entry_handler = disconnected_state_entry, .exit_handler = disconnected_state_exit },
+    [STATE_CONNECTED]    = { .event_handler = connected_state_handle_event, .entry_handler = connected_state_entry, .exit_handler = connected_state_exit },
+    [STATE_ERROR]        = { .event_handler = error_state_handle_event, .entry_handler = error_state_entry, .exit_handler = error_state_exit }
+};
+
+FSM_t remote_control_fsm;
 
 /*************************************************************************/
 /*                          private prototypes                           */
@@ -107,6 +131,7 @@ void AppInit(void) {
     app_data.state = STATE_ERROR;
   }
   net = network_get_interface();
+  FSM_Init(&remote_control_fsm, STATE_INIT, app_state_table, NUM_STATES);
 }
 
 volatile uint32_t disconnected_counter = 0;
@@ -117,44 +142,9 @@ void AppTask(void) {
     app_data.isTimeForHeartbeat = false;
     port_pin_toggle_output_level(LED1);
   }
-  
-  // remote control state machine:
-  switch (app_data.state) {
-    case STATE_INIT: {
-      app_data.state = STATE_DISCONNECTED;
-      net->register_callback(NULL, net_event_cb);
-      net->up(NULL);
-    }
-    case STATE_DISCONNECTED: {
-      bool sw_state = port_pin_get_input_level(SW0_PIN);
-      if(!sw_state){
-        if(last_sw_state){
-          DEBUG_OUTPUT(printf("reconnect...\r\n"));
-          net->up(NULL);
-        }
-      }
-      last_sw_state = sw_state;
 
-      if(disconnected_counter++ >=20000){
-        disconnected_counter = 0;
-        DEBUG_OUTPUT(printf("."));
-      }
-      
-      break;
-    }
-    case STATE_CONNECTED: {
-      if(app_data.isTimeForTransmit){
-        app_data.isTimeForTransmit = false;
-        sample_joysticks();
-        net->send(NULL, sendDataBuffer, 6 );
-      }
-      break;
-    }
-    case STATE_ERROR: {
-      //ToDo: error handling
-      break;
-    }
-  }
+  FSM_HandleEvent(&remote_control_fsm, EVENT_NONE);
+  
 }
 
 
@@ -164,9 +154,9 @@ void AppTask(void) {
 
 static void net_event_cb(const net_event_t* event, void* user_data){
   if(event->code == NWK_EVENT_CONNECTED || event->code == NWK_EVENT_CUSTOM){
-    DEBUG_OUTPUT(printf("app connected!\r\n"));
+    // DEBUG_OUTPUT(printf("app connected!\r\n"));
     DEBUG_OUTPUT(port_pin_set_output_level(LED0, false));
-    app_data.state = STATE_CONNECTED;
+    remote_control_fsm.current_state = STATE_CONNECTED;
   }
   else if(event->code == NWK_EVENT_DATA_RECEIVED){
     uint8_t start_payload_index = 0;
@@ -181,7 +171,7 @@ static void net_event_cb(const net_event_t* event, void* user_data){
     DEBUG_OUTPUT(printf("\r\n"));
   }
   else if(event->code == NWK_EVENT_DISCONNECTED){
-    DEBUG_OUTPUT(printf("app disconnected!\r\n"));
+    // DEBUG_OUTPUT(printf("app disconnected!\r\n"));
     DEBUG_OUTPUT(port_pin_set_output_level(LED0, true));
     app_data.state = STATE_DISCONNECTED;
   }
@@ -217,6 +207,64 @@ static void sample_joysticks(void){
 
       // pack button data
       sendDataBuffer[5] = (uint8_t)port_pin_get_input_level(SW0_PIN);
+
+}
+
+
+static void init_state_handle_event(FSM_t *fsm, event_t event){
+  remote_control_fsm.current_state = STATE_DISCONNECTED;
+  net->register_callback(NULL, net_event_cb);
+  net->up(NULL);
+}
+
+static void init_state_exit(FSM_t *fsm){
+
+}
+
+static void disconnected_state_handle_event(FSM_t *fsm, event_t event){
+  bool sw_state = port_pin_get_input_level(SW0_PIN);
+  if(!sw_state){
+    if(last_sw_state){
+      DEBUG_OUTPUT(printf("reconnect...\r\n"));
+      net->up(NULL);
+    }
+  }
+  last_sw_state = sw_state;
+
+  if(disconnected_counter++ >=20000){
+    disconnected_counter = 0;
+    DEBUG_OUTPUT(printf("."));
+  }
+}
+static void disconnected_state_entry(FSM_t *fsm){
+  DEBUG_OUTPUT(printf("app disconnected\r\n"));
+}
+static void disconnected_state_exit(FSM_t *fsm){
+
+}
+
+static void connected_state_handle_event(FSM_t *fsm, event_t event){
+  if(app_data.isTimeForTransmit){
+    app_data.isTimeForTransmit = false;
+    sample_joysticks();
+    net->send(NULL, sendDataBuffer, 6 );
+  }
+}
+
+static void connected_state_entry(FSM_t *fsm){
+  DEBUG_OUTPUT(printf("app connected\r\n"));
+}
+static void connected_state_exit(FSM_t *fsm){
+
+}
+
+static void error_state_handle_event(FSM_t *fsm, event_t event){
+  //ToDo: error handling...
+}
+static void error_state_entry(FSM_t *fsm){
+  DEBUG_OUTPUT(printf("app error\r\n"));
+}
+static void error_state_exit(FSM_t *fsm){
 
 }
 

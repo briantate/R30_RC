@@ -16,7 +16,8 @@ typedef enum {
   STATE_INIT,
   STATE_DISCONNECTED,
   STATE_CONNECTED,
-  STATE_ERROR
+  STATE_ERROR,
+  NUM_STATES
 } app_state_t;
 
 typedef struct{

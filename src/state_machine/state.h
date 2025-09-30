@@ -23,7 +23,7 @@ struct FSM_t;
  * @param fsm A pointer to the FSM_t instance.
  * @param event The event to be handled.
  */
-typedef void (*StateEventHandler_t)(struct FSM_t *fsm, event_t event);
+typedef void (*state_event_handler_t)(struct FSM_t *fsm, event_t event);
 
 /**
  * @brief Function pointer type for functions called upon entering a state.
@@ -32,7 +32,7 @@ typedef void (*StateEventHandler_t)(struct FSM_t *fsm, event_t event);
  *
  * @param fsm A pointer to the FSM_t instance.
  */
-typedef void (*StateEntryHandler_t)(struct FSM_t *fsm);
+typedef void (*state_entry_handler_t)(struct FSM_t *fsm);
 
 /**
  * @brief Function pointer type for functions called upon exiting a state.
@@ -41,7 +41,7 @@ typedef void (*StateEntryHandler_t)(struct FSM_t *fsm);
  *
  * @param fsm A pointer to the FSM_t instance.
  */
-typedef void (*StateExitHandler_t)(struct FSM_t *fsm);
+typedef void (*state_exit_handler_t)(struct FSM_t *fsm);
 
 /**
  * @brief Defines the structure for a single state in the state machine.
@@ -51,9 +51,9 @@ typedef void (*StateExitHandler_t)(struct FSM_t *fsm);
  */
 typedef struct
 {
-    StateEventHandler_t eventHandler; ///< Pointer to the function that handles events for this state.
-    StateEntryHandler_t entryHandler; ///< Optional: Function called when entering this state.
-    StateExitHandler_t exitHandler;   ///< Optional: Function called when exiting this state.
+    state_event_handler_t event_handler; ///< Pointer to the function that handles events for this state.
+    state_entry_handler_t entry_handler; ///< Optional: Function called when entering this state.
+    state_exit_handler_t exit_handler;   ///< Optional: Function called when exiting this state.
 } State_t;
 
 #endif // STATE_H

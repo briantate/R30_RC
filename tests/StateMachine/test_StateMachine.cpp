@@ -49,7 +49,7 @@ static void GenericStateA_HandleEvent(FSM_t *fsm, event_t event)
     // In this test state, if a specific event occurs, transition to State B
     if (event == GENERIC_EVENT_TRIGGER_TRANSITION)
     {
-        fsm->currentState = GENERIC_STATE_B;
+        fsm->current_state = GENERIC_STATE_B;
     }
     // Other events in State A do not cause a transition for this test
 }
@@ -90,9 +90,9 @@ static void GenericStateB_Exit(FSM_t *fsm)
 
 // The generic state table used for testing StateMachine.c
 const State_t GenericTestStateTable[GENERIC_NUM_STATES] = {
-    [GENERIC_STATE_A]       = { .eventHandler = GenericStateA_HandleEvent, .entryHandler = GenericStateA_Entry, .exitHandler = GenericStateA_Exit },
-    [GENERIC_STATE_B]       = { .eventHandler = GenericStateB_HandleEvent, .entryHandler = GenericStateB_Entry, .exitHandler = GenericStateB_Exit },
-    [GENERIC_STATE_INVALID] = { .eventHandler = NULL, .entryHandler = NULL, .exitHandler = NULL } // Explicitly set to NULL for testing
+    [GENERIC_STATE_A]       = { .event_handler = GenericStateA_HandleEvent, .entry_handler = GenericStateA_Entry, .exit_handler = GenericStateA_Exit },
+    [GENERIC_STATE_B]       = { .event_handler = GenericStateB_HandleEvent, .entry_handler = GenericStateB_Entry, .exit_handler = GenericStateB_Exit },
+    [GENERIC_STATE_INVALID] = { .event_handler = NULL, .entry_handler = NULL, .exit_handler = NULL } // Explicitly set to NULL for testing
 };
 
 // --- CppUTest Test Group for "Happy Path" StateMachine.c tests ---
@@ -120,7 +120,7 @@ TEST_GROUP(GenericStateMachine)
 // Test: Verify that the generic state machine initializes to GENERIC_STATE_A
 TEST(GenericStateMachine, InitialStateIsGenericStateA)
 {
-    LONGS_EQUAL(GENERIC_STATE_A, fsm.currentState);
+    LONGS_EQUAL(GENERIC_STATE_A, fsm.current_state);
     // Verify entry handler for initial state was called once by TEST_SETUP
     LONGS_EQUAL(1, entryA_calls);
     LONGS_EQUAL(0, exitA_calls);
@@ -131,12 +131,12 @@ TEST(GenericStateMachine, InitialStateIsGenericStateA)
 // // Test: Verify that the generic state machine transitions from A to B on a specific event
 TEST(GenericStateMachine, TransitionAToBOnEvent)
 {
-    LONGS_EQUAL(GENERIC_STATE_A, fsm.currentState); // Pre-condition check
+    LONGS_EQUAL(GENERIC_STATE_A, fsm.current_state); // Pre-condition check
 
     // Send the event that triggers the transition from A to B
     CHECK_TRUE(FSM_HandleEvent(&fsm, GENERIC_EVENT_TRIGGER_TRANSITION));
 
-    LONGS_EQUAL(GENERIC_STATE_B, fsm.currentState); // Assertion
+    LONGS_EQUAL(GENERIC_STATE_B, fsm.current_state); // Assertion
     // Verify exit A and entry B were called exactly once during the transition
     LONGS_EQUAL(1, exitA_calls);
     LONGS_EQUAL(1, entryB_calls);
@@ -147,13 +147,13 @@ TEST(GenericStateMachine, TransitionAToBOnEvent)
 // // Test: Verify that an unhandled event does not change state
 TEST(GenericStateMachine, UnhandledEventDoesNotChangeState)
 {
-    LONGS_EQUAL(GENERIC_STATE_A, fsm.currentState); // Pre-condition check
+    LONGS_EQUAL(GENERIC_STATE_A, fsm.current_state); // Pre-condition check
 
     // Send an event that is not handled in GENERIC_STATE_A
     CHECK_TRUE(FSM_HandleEvent(&fsm, GENERIC_EVENT_UNHANDLED));
 
     // Assert that the state remains GENERIC_STATE_A
-    LONGS_EQUAL(GENERIC_STATE_A, fsm.currentState);
+    LONGS_EQUAL(GENERIC_STATE_A, fsm.current_state);
     // No state change, so entry/exit handlers should not be called again
     LONGS_EQUAL(1, entryA_calls);
     LONGS_EQUAL(0, exitA_calls);
@@ -166,14 +166,14 @@ TEST(GenericStateMachine, NoTransitionFromGenericStateB)
 {
     // First, transition to GENERIC_STATE_B
     CHECK_TRUE(FSM_HandleEvent(&fsm, GENERIC_EVENT_TRIGGER_TRANSITION));
-    LONGS_EQUAL(GENERIC_STATE_B, fsm.currentState); // Verify pre-condition
+    LONGS_EQUAL(GENERIC_STATE_B, fsm.current_state); // Verify pre-condition
     LONGS_EQUAL(1, entryB_calls);
     
     // Send any event to State B
     CHECK_TRUE(FSM_HandleEvent(&fsm, GENERIC_EVENT_UNHANDLED));
 
     // Assert that the state remains GENERIC_STATE_B
-    LONGS_EQUAL(GENERIC_STATE_B, fsm.currentState);
+    LONGS_EQUAL(GENERIC_STATE_B, fsm.current_state);
     // No state change, so entry/exit handlers should not be called again
     LONGS_EQUAL(1, entryB_calls);
     LONGS_EQUAL(0, exitB_calls);
@@ -194,10 +194,10 @@ TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnNullFSM)
 
 TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnNullStateTable)
 {
-    // FSM is initialized by TEST_SETUP. Now, manually corrupt its stateTable pointer
-    fsm.stateTable = NULL;
+    // FSM is initialized by TEST_SETUP. Now, manually corrupt its state_table pointer
+    fsm.state_table = NULL;
 
-    // Attempt to handle an event with a NULL stateTable
+    // Attempt to handle an event with a NULL state_table
     bool result = FSM_HandleEvent(&fsm, GENERIC_EVENT_TRIGGER_TRANSITION);
     CHECK_FALSE(result);
     // No change to entry/exit counts beyond initial setup
@@ -208,7 +208,7 @@ TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnNullStateTable)
 TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnInvalidCurrentState)
 {
     // FSM is initialized by TEST_SETUP. Now, manually set an invalid current state
-    fsm.currentState = GENERIC_NUM_STATES + 1; // An out-of-bounds state
+    fsm.current_state = GENERIC_NUM_STATES + 1; // An out-of-bounds state
 
     // Attempt to handle an event from an invalid state
     bool result = FSM_HandleEvent(&fsm, GENERIC_EVENT_TRIGGER_TRANSITION);
@@ -219,7 +219,7 @@ TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnInvalidCurrentState)
 
 
     // FSM is initialized by TEST_SETUP. Now, manually set an invalid current state
-    fsm.currentState = -1; // An out-of-bounds state
+    fsm.current_state = -1; // An out-of-bounds state
 
     // Attempt to handle an event from an invalid state
     result = FSM_HandleEvent(&fsm, GENERIC_EVENT_TRIGGER_TRANSITION);
@@ -234,7 +234,7 @@ TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnInvalidCurrentState)
 TEST(GenericStateMachine, FSM_HandleEvent_ReturnsFalseOnNullStateHandler)
 {
     // FSM is initialized by TEST_SETUP. Now, manually set a state with a NULL handler
-    fsm.currentState = GENERIC_STATE_INVALID;
+    fsm.current_state = GENERIC_STATE_INVALID;
 
     // Attempt to handle an event in a state with a NULL handler
     bool result = FSM_HandleEvent(&fsm, GENERIC_EVENT_UNHANDLED);
@@ -267,7 +267,7 @@ TEST(GenericStateMachine_InitFailures, FSM_Init_ReturnsFalseOnNullStateTable)
 {
     ResetMockCounters();
     FSM_t local_fsm; // A local FSM instance for this specific test
-    // Attempt to initialize with a NULL stateTable pointer
+    // Attempt to initialize with a NULL state_table pointer
     bool result = FSM_Init(&local_fsm, GENERIC_STATE_A, NULL, GENERIC_NUM_STATES);
     CHECK_FALSE(result); // Assert that initialization failed
     // No entry/exit handlers should have been called
@@ -278,7 +278,7 @@ TEST(GenericStateMachine_InitFailures, FSM_Init_ReturnsFalseOnNullStateTable)
 TEST(GenericStateMachine_InitFailures, FSM_Init_ReturnsFalseOnNullFSMAndNullStateTable)
 {
     ResetMockCounters();
-    // Attempt to initialize with both FSM and stateTable pointers as NULL
+    // Attempt to initialize with both FSM and state_table pointers as NULL
     bool result = FSM_Init(NULL, GENERIC_STATE_A, NULL, GENERIC_NUM_STATES);
     CHECK_FALSE(result); // Assert that initialization failed
     // No entry/exit handlers should have been called
