@@ -17,6 +17,16 @@ void CustomBoardInit(void) {
   config_port_pin.direction = PORT_PIN_DIR_INPUT;
   config_port_pin.input_pull = PORT_PIN_PULL_UP;
   port_pin_set_config(SW0_PIN, &config_port_pin);
+  
+  // init LEFT_BUTTON
+  config_port_pin.direction = PORT_PIN_DIR_INPUT;
+  config_port_pin.input_pull = PORT_PIN_PULL_UP;
+  port_pin_set_config(LEFT_BUTTON_PIN, &config_port_pin);
+
+  // init RIGHT_BUTTON
+  config_port_pin.direction = PORT_PIN_DIR_INPUT;
+  config_port_pin.input_pull = PORT_PIN_PULL_UP;
+  port_pin_set_config(RIGHT_BUTTON_PIN, &config_port_pin);
 
   // init ROLE_PIN
   config_port_pin.direction = PORT_PIN_DIR_INPUT;

@@ -63,6 +63,8 @@ static net_api_t* net = NULL;
 static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
 // static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 static bool last_sw_state = true;
+static bool last_left_button_state = true;
+static bool last_right_button_state = true;
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
 
@@ -99,6 +101,7 @@ FSM_t remote_control_fsm;
 /*                          private prototypes                           */
 /*************************************************************************/
 static void sample_joysticks(void);
+static bool check_double_button_press(void);
 
 /*************************************************************************/
 /*                          public API                                   */
@@ -210,6 +213,19 @@ static void sample_joysticks(void){
 
 }
 
+static bool check_double_button_press(void){
+  bool ret = false;
+  bool left_button_state = port_pin_get_input_level(LEFT_BUTTON_PIN);
+  bool right_button_state = port_pin_get_input_level(RIGHT_BUTTON_PIN);
+  if(!left_button_state && !right_button_state){
+    if(last_left_button_state || last_right_button_state){
+      ret = true;
+    }
+  }
+  last_left_button_state = left_button_state;
+  last_right_button_state = right_button_state;
+  return ret;
+}
 
 static void init_state_handle_event(FSM_t *fsm, event_t event){
   remote_control_fsm.current_state = STATE_DISCONNECTED;
@@ -222,14 +238,19 @@ static void init_state_exit(FSM_t *fsm){
 }
 
 static void disconnected_state_handle_event(FSM_t *fsm, event_t event){
-  bool sw_state = port_pin_get_input_level(SW0_PIN);
-  if(!sw_state){
-    if(last_sw_state){
-      DEBUG_OUTPUT(printf("reconnect...\r\n"));
-      net->up(NULL);
-    }
+  // bool sw_state = port_pin_get_input_level(SW0_PIN);
+  // if(!sw_state){
+  //   if(last_sw_state){
+  //     DEBUG_OUTPUT(printf("reconnect...\r\n"));
+  //     net->up(NULL);
+  //   }
+  // }
+  // last_sw_state = sw_state;
+
+  if(check_double_button_press()){
+    DEBUG_OUTPUT(printf("reconnect...\r\n"));
+    net->up(NULL);
   }
-  last_sw_state = sw_state;
 
   if(disconnected_counter++ >=20000){
     disconnected_counter = 0;
