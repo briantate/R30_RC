@@ -8,7 +8,7 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "Event.h" // Include event definitions
+#include "event.h" // Include event definitions
 
 // Forward declaration of FSM_t to avoid circular dependency
 // State functions will need access to the FSM instance.

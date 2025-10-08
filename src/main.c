@@ -28,7 +28,7 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip
  * Support</a>
  */
-#include "remote_control.h"
+#include "remote_control_app.h"
 #include "asf.h"
 #include "network_internal.h"
 

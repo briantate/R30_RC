@@ -14,7 +14,7 @@ target_sources( ${TARGET}
     PRIVATE
         main.c
         analog.c
-        remote_control.c
+        remote_control_app.c
         custom_board.c
         debug_interface.c
         joystick.c

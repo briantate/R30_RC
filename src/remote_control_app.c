@@ -5,9 +5,9 @@
  *  Author: Brian Tate
  */
 
-#include "remote_control.h"
+#include "remote_control_app.h"
 
-#include "analog.h"
+#include "analog.h"      //analog wrapper for use with joystick
 #include "asf.h"
 #include "conf_clocks.h"  //needed for sleep mode operation
 #include "custom_board.h"
