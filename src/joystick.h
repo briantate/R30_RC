@@ -35,7 +35,7 @@
 	 *         callback function for vertical ADC reading
 	 * output: pointer to joystick object instance - serves as a handle
 	 */
-	joystickPtr Joystick_Create(ADC_ReadVal_t readHorz, ADC_ReadVal_t readVert);
+	joystickPtr Joystick_Create(ADC_ReadVal_t Read_X, ADC_ReadVal_t Read_Y);
 	
 	/*
 	 * Joystick_Delete
@@ -55,7 +55,7 @@
 	void Joystick_Measure(joystickPtr joystickInstance);
 	
 	/*
-	 * Joystick_GetHorz
+	 * Joystick_GetX
 	 * Get horizontal measurement of joystick
 	 * inputs: pointer to joystick object instance
 	 * output: horizontal measurement of distance from center
@@ -63,7 +63,7 @@
 	uint8_t Joystick_GetX( joystickPtr joystickInstance);
 	
 	/*
-	 * Joystick_GetHorzDirection
+	 * Joystick_GetXDirection
 	 * get the left/right position of the joystick
 	 * inputs: pointer to joystick object instance
 	 * output: boolean direction 

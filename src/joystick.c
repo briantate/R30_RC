@@ -36,15 +36,15 @@ struct JOYSTICK {
 static struct JOYSTICK JoystickPool[MAX_JOYSTICKS];
 static uint8_t numberOfJoysticks = 0;
 
-joystickPtr Joystick_Create(ADC_ReadVal_t readHorz, ADC_ReadVal_t readVert) {
+joystickPtr Joystick_Create(ADC_ReadVal_t Read_X, ADC_ReadVal_t Read_Y) {
   joystickPtr joystick = NULL;
   if (numberOfJoysticks < MAX_JOYSTICKS) {
     joystick = &JoystickPool[numberOfJoysticks++];
     // initialize the object
     joystick->xRaw = CENTER_VAL;
     joystick->yRaw = CENTER_VAL;
-    joystick->readXadc = readHorz;
-    joystick->readYadc = readVert;
+    joystick->readXadc = Read_X;
+    joystick->readYadc = Read_Y;
   }
 
   return joystick;
