@@ -211,16 +211,22 @@ static void sample_joysticks(void){
       drive_packet.polarity_buttons.bits.l_y_direction = Joystick_GetYpolarity(leftJoystick);
       drive_packet.polarity_buttons.bits.r_x_direction = Joystick_GetXpolarity(rightJoystick);
       drive_packet.polarity_buttons.bits.r_y_direction = Joystick_GetYpolarity(rightJoystick);
-      drive_packet.polarity_buttons.bits.l_button = port_pin_get_input_level(LEFT_BUTTON_PIN);
-      drive_packet.polarity_buttons.bits.r_button = port_pin_get_input_level(RIGHT_BUTTON_PIN);
+      drive_packet.polarity_buttons.bits.l_button = !port_pin_get_input_level(LEFT_BUTTON_PIN);  //inverted polarity
+      drive_packet.polarity_buttons.bits.r_button = !port_pin_get_input_level(RIGHT_BUTTON_PIN); //inverted polarity
 
-      // DEBUG_OUTPUT(printf("type: %02x ",   drive_packet.header.type));
-      // DEBUG_OUTPUT(printf("len: %02x ",    drive_packet.header.payload_length));
-      // DEBUG_OUTPUT(printf("lx: %02x ",     drive_packet.left_x_speed));
-      // DEBUG_OUTPUT(printf("ly: %02x ",     drive_packet.left_y_speed));
-      // DEBUG_OUTPUT(printf("rx: %02x ",     drive_packet.right_x_speed));
-      // DEBUG_OUTPUT(printf("ry: %02x ",     drive_packet.right_y_speed));
-      // DEBUG_OUTPUT(printf("bpl: %02x\r\n", drive_packet.polarity_buttons.reg));
+      DEBUG_OUTPUT(printf("type: %02x ",   drive_packet.header.type));
+      DEBUG_OUTPUT(printf("len: %02x ",    drive_packet.header.payload_length));
+      DEBUG_OUTPUT(printf("lx: %02x ",     drive_packet.left_x_speed));
+      DEBUG_OUTPUT(printf("ly: %02x ",     drive_packet.left_y_speed));
+      DEBUG_OUTPUT(printf("rx: %02x ",     drive_packet.right_x_speed));
+      DEBUG_OUTPUT(printf("ry: %02x ",     drive_packet.right_y_speed));
+      DEBUG_OUTPUT(printf("lxpol: %d ", drive_packet.polarity_buttons.bits.l_x_direction));
+      DEBUG_OUTPUT(printf("lypol: %d ", drive_packet.polarity_buttons.bits.l_y_direction));
+      DEBUG_OUTPUT(printf("rxpol: %d ", drive_packet.polarity_buttons.bits.r_x_direction));
+      DEBUG_OUTPUT(printf("rypol: %d ", drive_packet.polarity_buttons.bits.r_y_direction));
+      DEBUG_OUTPUT(printf("lb: %d ", drive_packet.polarity_buttons.bits.l_button));
+      DEBUG_OUTPUT(printf("rb: %d ", drive_packet.polarity_buttons.bits.r_button));
+      DEBUG_OUTPUT(printf("bpl: %02x\r\n", drive_packet.polarity_buttons.reg));
 
 }
 

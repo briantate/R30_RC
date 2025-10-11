@@ -23,11 +23,11 @@
 #define SW0_EIC_PINMUX            PINMUX_PA28A_EIC_EXTINT8
 #define SW0_EIC_LINE              8
 
-#define LEFT_BUTTON_PIN           PIN_PA28
+#define LEFT_BUTTON_PIN           PIN_PA13
 #define LEFT_BUTTON_ACTIVE        false
 #define LEFT_BUTTON_INACTIVE      !LEFT_BUTTON_INACTIVE
 
-#define RIGHT_BUTTON_PIN           PIN_PA13
+#define RIGHT_BUTTON_PIN           PIN_PA28
 #define RIGHT_BUTTON_ACTIVE        false
 #define RIGHT_BUTTON_INACTIVE      !RIGHT_BUTTON_ACTIVE
 
