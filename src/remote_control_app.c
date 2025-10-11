@@ -9,6 +9,7 @@
 
 #include "analog.h"      //analog wrapper for use with joystick
 #include "asf.h"
+#include "car_protocol.h"
 #include "conf_clocks.h"  //needed for sleep mode operation
 #include "custom_board.h"
 #include "debug_interface.h" //for debug logging
@@ -44,6 +45,7 @@ static void net_event_cb(const net_event_t* event, void* user_data);
 static void heartbeat_timer_handler(struct SYS_Timer_t *timer);
 static void transmit_timer_handler(struct SYS_Timer_t *timer);
 
+//state machine functions
 static void init_state_handle_event(FSM_t *fsm, event_t event);
 static void init_state_exit(FSM_t *fsm);
 static void disconnected_state_handle_event(FSM_t *fsm, event_t event);
@@ -60,10 +62,11 @@ static void error_state_exit(FSM_t *fsm);
 /*                          local variables                              */
 /*************************************************************************/
 static net_api_t* net = NULL; 
-static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
+// static uint8_t sendDataBuffer[SEND_BUFFER_SIZE];
 // static uint8_t receiveDataBuffer[RECEIVE_BUFFER_SIZE];
 static bool last_left_button_state = true;
 static bool last_right_button_state = true;
+static car_drive_packet_t drive_packet;
 volatile joystickPtr leftJoystick;
 volatile joystickPtr rightJoystick;
 
@@ -87,7 +90,7 @@ static SYS_Timer_t transmit_timer = {
 };
 
 // state table
-const State_t app_state_table[NUM_STATES] = {
+const State_t network_state_table[NUM_STATES] = {
     [STATE_INIT]         = { .event_handler = init_state_handle_event, .entry_handler = NULL, .exit_handler = init_state_exit },
     [STATE_DISCONNECTED] = { .event_handler = disconnected_state_handle_event, .entry_handler = disconnected_state_entry, .exit_handler = disconnected_state_exit },
     [STATE_CONNECTED]    = { .event_handler = connected_state_handle_event, .entry_handler = connected_state_entry, .exit_handler = connected_state_exit },
@@ -133,7 +136,7 @@ void RemoteControlInit(void) {
     app_data.state = STATE_ERROR;
   }
   net = network_get_interface();
-  FSM_Init(&remote_control_fsm, STATE_INIT, app_state_table, NUM_STATES);
+  FSM_Init(&remote_control_fsm, STATE_INIT, network_state_table, NUM_STATES);
 }
 
 volatile uint32_t disconnected_counter = 0;
@@ -143,7 +146,6 @@ void RemoteControlTask(void) {
   {
     app_data.isTimeForHeartbeat = false;
     port_pin_toggle_output_level(LED1);
-    port_pin_toggle_output_level(LED2);
   }
 
   FSM_HandleEvent(&remote_control_fsm, EVENT_NONE);
@@ -198,18 +200,27 @@ static void sample_joysticks(void){
       Joystick_Measure(leftJoystick);
       Joystick_Measure(rightJoystick);
       // create TX payload
-      sendDataBuffer[0] = (uint8_t)Joystick_GetX(leftJoystick);
-      sendDataBuffer[1] = (uint8_t)Joystick_GetY(leftJoystick);
-      sendDataBuffer[2] = (uint8_t)Joystick_GetX(rightJoystick);
-      sendDataBuffer[3] = (uint8_t)Joystick_GetY(rightJoystick);
-      // pack direction bits
-      sendDataBuffer[4] = (Joystick_GetXpolarity(leftJoystick) << L_XDIR_POS) |
-                          (Joystick_GetYpolarity(leftJoystick) << L_YDIR_POS) |
-                          (Joystick_GetXpolarity(rightJoystick) << R_XDIR_POS) |
-                          (Joystick_GetYpolarity(rightJoystick) << R_YDIR_POS);
+      drive_packet.header.type = CMD_DRIVE;
+      drive_packet.header.payload_length = (uint8_t) (sizeof(car_drive_packet_t) - sizeof(car_protocol_header_t));
+      drive_packet.left_x_speed = Joystick_GetX(leftJoystick);
+      drive_packet.left_y_speed = Joystick_GetY(leftJoystick);
+      drive_packet.right_x_speed = Joystick_GetX(rightJoystick);
+      drive_packet.right_y_speed = Joystick_GetY(rightJoystick);
+      drive_packet.polarity_buttons.bits.rsvd = 0;
+      drive_packet.polarity_buttons.bits.l_x_direction = Joystick_GetXpolarity(leftJoystick);
+      drive_packet.polarity_buttons.bits.l_y_direction = Joystick_GetYpolarity(leftJoystick);
+      drive_packet.polarity_buttons.bits.r_x_direction = Joystick_GetXpolarity(rightJoystick);
+      drive_packet.polarity_buttons.bits.r_y_direction = Joystick_GetYpolarity(rightJoystick);
+      drive_packet.polarity_buttons.bits.l_button = port_pin_get_input_level(LEFT_BUTTON_PIN);
+      drive_packet.polarity_buttons.bits.r_button = port_pin_get_input_level(RIGHT_BUTTON_PIN);
 
-      // pack button data
-      sendDataBuffer[5] = (uint8_t)port_pin_get_input_level(SW0_PIN);
+      // DEBUG_OUTPUT(printf("type: %02x ",   drive_packet.header.type));
+      // DEBUG_OUTPUT(printf("len: %02x ",    drive_packet.header.payload_length));
+      // DEBUG_OUTPUT(printf("lx: %02x ",     drive_packet.left_x_speed));
+      // DEBUG_OUTPUT(printf("ly: %02x ",     drive_packet.left_y_speed));
+      // DEBUG_OUTPUT(printf("rx: %02x ",     drive_packet.right_x_speed));
+      // DEBUG_OUTPUT(printf("ry: %02x ",     drive_packet.right_y_speed));
+      // DEBUG_OUTPUT(printf("bpl: %02x\r\n", drive_packet.polarity_buttons.reg));
 
 }
 
@@ -260,7 +271,8 @@ static void connected_state_handle_event(FSM_t *fsm, event_t event){
   if(app_data.isTimeForTransmit){
     app_data.isTimeForTransmit = false;
     sample_joysticks();
-    net->send(NULL, sendDataBuffer, 6 );
+    // net->send(NULL, sendDataBuffer, 6 );
+    net->send(NULL, (const uint8_t *)&drive_packet, sizeof(car_drive_packet_t));
   }
 }
 

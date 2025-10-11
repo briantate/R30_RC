@@ -23,7 +23,7 @@
 /*************************************************************************/
 static const uint16_t broadcastAddress = 0xFFFF;
 static net_config_t miwi_net_config = {0};
-static uint8_t myChannel = 3;
+static uint8_t myChannel = 8;
 static net_event_callback_t callback = NULL;
 static net_state_t state = UNINITIALIZED;
 
