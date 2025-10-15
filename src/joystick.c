@@ -12,8 +12,8 @@
 // macro's for 8b ADC data processing
 #define GUARD_BAND 20
 #define CENTER_VAL 128
-#define FORWARD_VAL CENTER_VAL + GUARD_BAND
-#define BACKWARD_VAL CENTER_VAL - GUARD_BAND
+#define FORWARD_VAL (CENTER_VAL + GUARD_BAND)
+#define BACKWARD_VAL (CENTER_VAL - GUARD_BAND)
 #define MAX_VAL 127
 #define POSITIVE true
 #define NEGATIVE false
@@ -86,10 +86,10 @@ void Joystick_Measure(joystickPtr joystickInstance) {
 void joystick_filter(joystickPtr joystickInstance) {
   // filter vertical
   if (joystickInstance->yRaw > FORWARD_VAL) {
-    joystickInstance->yFiltered = joystickInstance->yRaw - FORWARD_VAL;
+    joystickInstance->yFiltered = joystickInstance->yRaw - CENTER_VAL;
     joystickInstance->yPolarity = POSITIVE;
   } else if (joystickInstance->yRaw < BACKWARD_VAL) {
-    joystickInstance->yFiltered = BACKWARD_VAL - joystickInstance->yRaw;
+    joystickInstance->yFiltered = CENTER_VAL - joystickInstance->yRaw;
     joystickInstance->yPolarity = NEGATIVE;
   } else {
     joystickInstance->yFiltered = 0;
@@ -108,10 +108,10 @@ void joystick_filter(joystickPtr joystickInstance) {
 
   // filter horizontal
   if (joystickInstance->xRaw > FORWARD_VAL) {
-    joystickInstance->xFiltered = joystickInstance->xRaw - FORWARD_VAL;
+    joystickInstance->xFiltered = joystickInstance->xRaw - CENTER_VAL;
     joystickInstance->xPolarity = POSITIVE;
   } else if (joystickInstance->xRaw < BACKWARD_VAL) {
-    joystickInstance->xFiltered = BACKWARD_VAL - joystickInstance->xRaw;
+    joystickInstance->xFiltered = CENTER_VAL - joystickInstance->xRaw;
     joystickInstance->xPolarity = NEGATIVE;
   } else {
     joystickInstance->xFiltered = 0;
